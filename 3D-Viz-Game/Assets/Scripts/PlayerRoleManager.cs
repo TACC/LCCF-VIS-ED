@@ -1,19 +1,18 @@
 using Unity.Netcode;
 using UnityEngine;
 using TMPro;
-using UnityEngine.UI; // text mesh supp
-
-//using UnityEngine.InputSystem; // for manually testing inputs
+using UnityEngine.UI;
+using Unity.Collections; // text mesh supp
 
 public class PlayerRoleManager : NetworkBehaviour
 {
-    string[] roles = {"Resturant","Cashier", "Kitchen", "Stocker", "Dishwasher" };
     private string assignedRole;
 
-    public Camera playerCam; 
+    public Camera playerCam;
     public TextMeshProUGUI roleText;
-    public UnityEngine.UI.Button scoreButton; // test - delete later
     public Text scoreText;
+
+    private NetworkVariable<FixedString64Bytes> networkRole = new NetworkVariable<FixedString64Bytes>();
 
 
     // this runs every time a player is spawned in multiplayer
@@ -27,9 +26,27 @@ public class PlayerRoleManager : NetworkBehaviour
             return;
         }
 
-        // assign role based on join order
-        int roleIndex = (int)OwnerClientId % roles.Length;
-        assignedRole = roles[roleIndex];
+        // assign main screen to show resturant
+        if (IsServer && IsOwner && networkRole.Value.IsEmpty)
+        {
+            SetRoleServerRpc("Resturant");
+        }
+        
+        // assign role based on UI choice
+        networkRole.OnValueChanged += (oldValue, newValue) =>
+        {
+            ApplyRole(newValue.ToString());
+        };
+
+        if (!string.IsNullOrEmpty(networkRole.Value.ToString()))
+        {
+            ApplyRole(networkRole.Value.ToString());
+        }
+    }
+
+private void ApplyRole(string assignedRole)
+    {
+        Debug.Log($"[Client {OwnerClientId}] Applying role: {assignedRole}");
 
         // finds the cam in the hierarchy, and then enables it for the client
         Camera roleCam = GameObject.Find($"{assignedRole}Cam")?.GetComponent<Camera>();
@@ -49,34 +66,14 @@ public class PlayerRoleManager : NetworkBehaviour
         }
         Debug.Log($"[Client {OwnerClientId}] Spawned as {assignedRole}");
 
+    }
 
-        //logic as to how to spawn different UI elements on different roles
-        // note to self - this logic will be used for cashier making a ticket and handing it over to kitchen
-        GameObject buttonObj = GameObject.Find("ScoreButton");
-        GameObject score = GameObject.Find("ScoreText");
-
-        if (buttonObj != null && score != null)
-        {
-            scoreButton = buttonObj.GetComponent<Button>();
-            scoreText = score.GetComponent<Text>();
-
-
-            scoreButton.gameObject.SetActive(false); // everyone gets a button
-            scoreText.gameObject.SetActive(false);
-
-
-            // if (assignedRole == "Cashier")
-            // {
-            //     Debug.Log("After checking assigned role");
-            //     // only enabling score on the cashier's screen
-
-            //     scoreText.gameObject.SetActive(true);
-            //     //scoreButton.gameObject.SetActive(false);
-            // }
-        }
-
-        // connecting client to matching player model
-        
+    // method runs on the server but is called by clients
+    // sets the role
+    [ServerRpc]
+    public void SetRoleServerRpc(string chosenRole)
+    {
+        networkRole.Value = chosenRole;
     }
 
 }
