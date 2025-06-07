@@ -17,7 +17,7 @@ public class RoleSelectionUI : MonoBehaviour
             gameObject.SetActive(false);
             return;
         }
-        
+
         // continue button cannot be clicked until player pressed a role button
         continueButton.interactable = false;
         continueButton.onClick.AddListener(OnContinueClicked);
@@ -27,6 +27,7 @@ public class RoleSelectionUI : MonoBehaviour
             string role = button.name;
             button.onClick.AddListener(() => OnRoleSelected(role));
         }
+        Invoke("RefreshRoleButtons", 1f);
     }
 
     void OnRoleSelected(string role)
@@ -57,6 +58,11 @@ public class RoleSelectionUI : MonoBehaviour
 
         if (localPlayer != null)
         {
+            if (RoleLockManager.Instance.IsRoleTaken(selectedRole))
+            {
+                Debug.LogWarning($"Role {selectedRole} is already taken");
+                return;
+            }
             localPlayer.SetRoleServerRpc(selectedRole);
             gameObject.SetActive(false); // hide role selection UI
         }

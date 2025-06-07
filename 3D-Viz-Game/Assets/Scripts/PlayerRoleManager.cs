@@ -2,18 +2,18 @@ using Unity.Netcode;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using Unity.Collections; // text mesh supp
+using Unity.Collections;
+using System.Collections.Generic;
 
 public class PlayerRoleManager : NetworkBehaviour
 {
-    private string assignedRole;
+    private NetworkVariable<FixedString64Bytes> networkRole = new NetworkVariable<FixedString64Bytes>();
+    // foro future customization
+    //private NetworkVariable<FixedString64Bytes> characterName = new NetworkVariable<FixedString64Bytes>();
+    //private NetworkVariable<FixedString64Bytes> skinColor = new NetworkVariable<FixedString64Bytes>();
 
     public Camera playerCam;
     public TextMeshProUGUI roleText;
-    public Text scoreText;
-
-    private NetworkVariable<FixedString64Bytes> networkRole = new NetworkVariable<FixedString64Bytes>();
-
 
     // this runs every time a player is spawned in multiplayer
     public override void OnNetworkSpawn()
@@ -31,20 +31,20 @@ public class PlayerRoleManager : NetworkBehaviour
         {
             SetRoleServerRpc("Resturant");
         }
-        
+
         // assign role based on UI choice
         networkRole.OnValueChanged += (oldValue, newValue) =>
         {
             ApplyRole(newValue.ToString());
         };
 
-        if (!string.IsNullOrEmpty(networkRole.Value.ToString()))
+        if (!networkRole.Value.IsEmpty)
         {
             ApplyRole(networkRole.Value.ToString());
         }
     }
 
-private void ApplyRole(string assignedRole)
+    private void ApplyRole(string assignedRole)
     {
         Debug.Log($"[Client {OwnerClientId}] Applying role: {assignedRole}");
 
@@ -73,9 +73,19 @@ private void ApplyRole(string assignedRole)
     [ServerRpc]
     public void SetRoleServerRpc(string chosenRole)
     {
-        networkRole.Value = chosenRole;
-    }
+        if (RoleLockManager.Instance.IsRoleTaken(chosenRole))
+        {
+            Debug.LogWarning($"Role {chosenRole} is already taken");
+            return;
+        }
 
+        //set the values that we want saved and shared
+        networkRole.Value = chosenRole;
+        RoleLockManager.Instance.MarkRoleTaken(chosenRole);
+
+        Debug.Log($"Player {OwnerClientId} assigned role {chosenRole}");
+    }
+    
 }
 
 
