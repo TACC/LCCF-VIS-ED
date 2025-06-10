@@ -7,10 +7,11 @@ using System.Collections.Generic;
 
 public class PlayerRoleManager : NetworkBehaviour
 {
-    private NetworkVariable<FixedString64Bytes> networkRole = new NetworkVariable<FixedString64Bytes>();
-    // foro future customization
-    //private NetworkVariable<FixedString64Bytes> characterName = new NetworkVariable<FixedString64Bytes>();
-    //private NetworkVariable<FixedString64Bytes> skinColor = new NetworkVariable<FixedString64Bytes>();
+    private NetworkVariable<FixedString64Bytes> networkRole = new NetworkVariable<FixedString64Bytes>(
+    default,
+    NetworkVariableReadPermission.Everyone,
+    NetworkVariableWritePermission.Server
+);
 
     public Camera playerCam;
     public TextMeshProUGUI roleText;
@@ -73,7 +74,7 @@ public class PlayerRoleManager : NetworkBehaviour
     [ServerRpc]
     public void SetRoleServerRpc(string chosenRole)
     {
-        if (RoleLockManager.Instance.IsRoleTaken(chosenRole))
+        if (RoleLockManager.Instance.IsRoleTaken(chosenRole, OwnerClientId))
         {
             Debug.LogWarning($"Role {chosenRole} is already taken");
             return;
@@ -81,7 +82,11 @@ public class PlayerRoleManager : NetworkBehaviour
 
         //set the values that we want saved and shared
         networkRole.Value = chosenRole;
-        RoleLockManager.Instance.MarkRoleTaken(chosenRole);
+        if (!IsHost || NetworkManager.Singleton.LocalClientId != NetworkManager.ServerClientId)
+        {
+            RoleLockManager.Instance.HardLockRoleServerRpc(chosenRole);
+        }
+        //RoleLockManager.Instance.HardLockRoleServerRpc(chosenRole);
 
         Debug.Log($"Player {OwnerClientId} assigned role {chosenRole}");
     }

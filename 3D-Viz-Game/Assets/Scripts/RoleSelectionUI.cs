@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Unity.Netcode;
 
+
 public class RoleSelectionUI : MonoBehaviour
 {
     public Button[] roleButtons;
@@ -27,7 +28,8 @@ public class RoleSelectionUI : MonoBehaviour
             string role = button.name;
             button.onClick.AddListener(() => OnRoleSelected(role));
         }
-        Invoke("RefreshRoleButtons", 1f);
+        RoleLockManager.Instance.SoftLockedRoles.OnListChanged += (changeEvent) => RefreshRoleButtons();
+        RoleLockManager.Instance.HardLockedRoles.OnListChanged += (changeEvent) => RefreshRoleButtons();
     }
 
     void OnRoleSelected(string role)
@@ -35,12 +37,8 @@ public class RoleSelectionUI : MonoBehaviour
         selectedRole = role;
         continueButton.interactable = true;
 
-        foreach (Button b in roleButtons)
-        {
-            ColorBlock cb = b.colors;
-            cb.normalColor = (b.name == role) ? Color.gray : Color.white;
-            b.colors = cb;
-        }
+        RoleLockManager.Instance.SoftLockRoleServerRpc(NetworkManager.Singleton.LocalClientId, role);
+        RefreshRoleButtons();
     }
 
     void OnContinueClicked()
@@ -58,13 +56,55 @@ public class RoleSelectionUI : MonoBehaviour
 
         if (localPlayer != null)
         {
-            if (RoleLockManager.Instance.IsRoleTaken(selectedRole))
+            if (RoleLockManager.Instance.IsRoleTaken(selectedRole, NetworkManager.Singleton.LocalClientId))
             {
                 Debug.LogWarning($"Role {selectedRole} is already taken");
                 return;
             }
             localPlayer.SetRoleServerRpc(selectedRole);
             gameObject.SetActive(false); // hide role selection UI
+        }
+    }
+
+    void RefreshRoleButtons()
+    {
+        foreach (Button b in roleButtons)
+        {
+            string roleName = b.name;
+            bool isHardLocked = false;
+            bool isSoftLocked = false;
+
+            foreach (var v in RoleLockManager.Instance.HardLockedRoles)
+            {
+                if (v.ToString() == roleName)
+                {
+                    isHardLocked = true;
+                    break;
+                }
+            }
+
+            foreach (var r in RoleLockManager.Instance.SoftLockedRoles)
+            {
+                if (r.Role.ToString() == roleName)
+                {
+                    // let selection be interactable
+                    if (r.ClientId == NetworkManager.Singleton.LocalClientId && roleName == selectedRole)
+                    {
+                        isSoftLocked = false;
+                    }
+                    else
+                    {
+                        isSoftLocked = true;
+                    }
+
+                    break;
+                }
+            }
+
+            b.interactable = !(isHardLocked || isSoftLocked);
+            ColorBlock cb = b.colors;
+            cb.normalColor = (roleName == selectedRole) ? Color.gray : (isHardLocked || isSoftLocked) ? Color.gray : Color.white;
+            b.colors = cb;
         }
     }
 
