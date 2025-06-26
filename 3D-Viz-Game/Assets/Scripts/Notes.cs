@@ -24,3 +24,27 @@
         // }
 
         // connecting client to matching player model
+
+
+           // this is to add picking stuff up but won't need since plan
+    // is to just have fake animations
+    // void OnTriggerEnter(Collider c)
+    // {
+    //     if (!IsServerInitialized) return;
+
+    //     if (c.gameObject.CompareTag("Pickup"))
+    //     {
+    //         c.gameObject.SetActive(false);
+    //         count += 1;
+    //         UpdateCountTextRpc(count);
+    //     }
+    // }
+
+
+// used when I had a point system
+        // [ObserversRpc]
+    // private void UpdateCountTextRpc(int newCount)
+    // {
+    //     if (countText != null)
+    //         countText.text = "Count: " + newCount.ToString();
+    // }

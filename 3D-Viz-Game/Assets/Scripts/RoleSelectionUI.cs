@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
-using Unity.Netcode;
-
+using FishNet.Managing;
+using System.Collections;
+using FishNet.Object;
 
 public class RoleSelectionUI : MonoBehaviour
 {
@@ -9,17 +10,47 @@ public class RoleSelectionUI : MonoBehaviour
     public Button continueButton;
     private string selectedRole = "";
     private PlayerRoleManager localPlayer;
+    private NetworkManager networkManager;
 
     void Start()
     {
-        // do not show the pick station UI for main camera
-        if (NetworkManager.Singleton.IsHost)
+        StartCoroutine(WaitForClientIdAndHideIfHost());
+    }
+
+    private IEnumerator WaitForClientIdAndHideIfHost()
+    {
+        networkManager = FindFirstObjectByType<NetworkManager>();
+
+        // wait for the network to be fully initialized
+        while (networkManager == null ||
+               !networkManager.IsClientStarted ||
+               networkManager.ClientManager.Connection == null)
         {
-            gameObject.SetActive(false);
-            return;
+            yield return null;
         }
 
-        // continue button cannot be clicked until player pressed a role button
+        // host: server + client + ClientId == 0
+        // don't let the host pick a role.
+        if (networkManager.IsServerStarted &&
+            networkManager.IsClientStarted &&
+            networkManager.ClientManager.Connection.ClientId == 0)
+        {
+            Debug.Log("Host detected — hiding RoleSelectionUI.");
+            gameObject.SetActive(false);
+            GameObject bgCanvas = GameObject.Find("RoleSelectionUI-background");
+            if (bgCanvas != null)
+            {
+                bgCanvas.SetActive(false);
+            }
+            yield break;
+        }
+
+        Debug.Log("Client detected — initializing RoleSelectionUI.");
+        InitUI();
+    }
+
+    private void InitUI()
+    {
         continueButton.interactable = false;
         continueButton.onClick.AddListener(OnContinueClicked);
 
@@ -28,26 +59,34 @@ public class RoleSelectionUI : MonoBehaviour
             string role = button.name;
             button.onClick.AddListener(() => OnRoleSelected(role));
         }
-        RoleLockManager.Instance.SoftLockedRoles.OnListChanged += (changeEvent) => RefreshRoleButtons();
-        RoleLockManager.Instance.HardLockedRoles.OnListChanged += (changeEvent) => RefreshRoleButtons();
+
+        StartCoroutine(WaitForRoleLockManagerThenInit());
     }
 
-    void OnRoleSelected(string role)
+    private void OnRoleSelected(string role)
     {
         selectedRole = role;
         continueButton.interactable = true;
 
-        RoleLockManager.Instance.SoftLockRoleServerRpc(NetworkManager.Singleton.LocalClientId, role);
+        if (RoleLockManager.Instance == null)
+        {
+            Debug.LogWarning("RoleLockManager is not yet initialized.");
+            return;
+        }
+
+        int localClientId = networkManager.ClientManager.Connection.ClientId;
+        RoleLockManager.Instance.SoftLockRoleServerRpc(localClientId, role);
+
         RefreshRoleButtons();
     }
 
-    void OnContinueClicked()
+    private void OnContinueClicked()
     {
         // Find the local player
         PlayerRoleManager[] players = FindObjectsByType<PlayerRoleManager>(FindObjectsSortMode.None);
         foreach (var player in players)
         {
-            if (player.IsLocalPlayer)
+            if (player.Owner.IsLocalClient)
             {
                 localPlayer = player;
                 break;
@@ -56,23 +95,34 @@ public class RoleSelectionUI : MonoBehaviour
 
         if (localPlayer != null)
         {
-            if (RoleLockManager.Instance.IsRoleTaken(selectedRole, NetworkManager.Singleton.LocalClientId))
+            int localClientId = networkManager.ClientManager.Connection.ClientId;
+            if (RoleLockManager.Instance.IsRoleTaken(selectedRole, localClientId))
             {
                 Debug.LogWarning($"Role {selectedRole} is already taken");
                 return;
             }
+
             localPlayer.SetRoleServerRpc(selectedRole);
             gameObject.SetActive(false); // hide role selection UI
         }
     }
 
-    void RefreshRoleButtons()
+    private IEnumerator WaitForRoleLockManagerThenInit()
+    {
+        while (RoleLockManager.Instance == null)
+            yield return null;
+
+        RefreshRoleButtons();
+    }
+
+    private void RefreshRoleButtons()
     {
         foreach (Button b in roleButtons)
         {
             string roleName = b.name;
             bool isHardLocked = false;
             bool isSoftLocked = false;
+            int localClientId = networkManager.ClientManager.Connection.ClientId;
 
             foreach (var v in RoleLockManager.Instance.HardLockedRoles)
             {
@@ -87,8 +137,7 @@ public class RoleSelectionUI : MonoBehaviour
             {
                 if (r.Role.ToString() == roleName)
                 {
-                    // let selection be interactable
-                    if (r.ClientId == NetworkManager.Singleton.LocalClientId && roleName == selectedRole)
+                    if (r.ClientId == localClientId && roleName == selectedRole)
                     {
                         isSoftLocked = false;
                     }
@@ -107,5 +156,4 @@ public class RoleSelectionUI : MonoBehaviour
             b.colors = cb;
         }
     }
-
 }

@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
-using Unity.Netcode;
 
+using FishNet.Object;
+using FishNet.Object.Synchronizing;
+using FishNet.Component.Transforming;
+
+[RequireComponent(typeof(NetworkTransform))]
 public class PlayerController : NetworkBehaviour
 {
 
@@ -16,85 +20,68 @@ public class PlayerController : NetworkBehaviour
 
     public GameObject guiPrefab;
 
-    private NetworkVariable<int> count = new NetworkVariable<int>(
-        0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
-    // Start is called before the first frame update
-    public override void OnNetworkSpawn()
+    /* Instatiate network objects that we want synced between the server and client
+    Will be edited but overall logic for setting up UI for each station*/
+    public override void OnStartNetwork()
     {
-        if (IsServer && IsOwner)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        base.OnStartNetwork();
+
         rb = GetComponent<Rigidbody>();
 
-        if (!IsServer && IsOwner)
+        if (base.Owner.IsLocalClient && !IsServerInitialized)
         {
             Debug.Log("Client spawning GUI!");
+            // create a copy of the prefab and finds GUIInputPanel
             GameObject guiInstance = Instantiate(guiPrefab);
             GUIInputPanel panel = guiInstance.GetComponentInChildren<GUIInputPanel>();
-            Debug.Log("" + this);
             panel.Init(this);
         }
-
-        count.OnValueChanged += (oldValue, newValue) =>
-        {
-            if (countText != null)
-                countText.text = "Count: " + newValue.ToString();
-        };
     }
 
-
+    /*Player movement stuff. Doesn't work for now.*/
     private void FixedUpdate()
     {
-        if (!IsServer) return;
+        if (!IsServerInitialized) return;
 
         Vector3 movementVector = new Vector3(movementX, 0.0f, movementY);
-        rb.AddForce(movementVector * speed);
+        rb.linearVelocity = movementVector.normalized * speed;
+
         movementX = 0;
         movementY = 0;
     }
 
-    void OnTriggerEnter(Collider c)
-    {
-        if (!IsServer) return;
 
-        if (c.gameObject.CompareTag("Pickup"))
-        {
-            c.gameObject.SetActive(false);
-            count.Value += 1;
-            // SetCountText();
-        }
-    }
-
+   /*Player movement networking for grabbing what button was pressed*/
     public void OnMove(InputValue value)
     {
-        if (!IsOwner || IsServer) return;
+        if (!IsOwner || IsServerInitialized) return;
 
         Vector2 movement = value.Get<Vector2>();
-        SubmitMovementServerRpc(movement);
+        SubmitMovement(direction: movement);
     }
 
+    /*Player movement networking, sending movement to server*/
     public void OnMoveFromButtons(Vector2 direction)
     {
         Debug.Log("Button pressed with direction: " + direction);
 
-        if (!IsClient || IsServer) return;
+        if (!IsClientInitialized || IsServerInitialized) return;
 
-        SubmitMovementServerRpc(direction);
+        SubmitMovement(direction);
     }
 
 
-    [ServerRpc(RequireOwnership = false)]
-    void SubmitMovementServerRpc(Vector2 direction)
+    // sends movement to server
+    [ServerRpc]
+    void SubmitMovement(Vector2 direction)
     {
         StartCoroutine(ApplyMovement(direction));
     }
 
     private IEnumerator ApplyMovement(Vector2 direction)
     {
-        float duration = 0.2f; // how long the character moves
+        // how long the character moves
+        float duration = 0.2f;
         float timer = 0f;
 
         while (timer < duration)
