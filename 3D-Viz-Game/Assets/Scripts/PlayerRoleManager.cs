@@ -23,8 +23,6 @@ public class PlayerRoleManager : NetworkBehaviour
             return;
         }
 
-
-        // assign main screen to show resturant
         if (base.Owner.IsLocalClient && Owner.ClientId == 0)
         {
             Debug.Log("Host running with Resturant camera.");
@@ -34,7 +32,6 @@ public class PlayerRoleManager : NetworkBehaviour
 
         if (base.Owner.IsLocalClient && string.IsNullOrEmpty(networkRole))
         {
-            // Let player pick their role
             Debug.Log("Client waiting for role selection.");
         }
     }
@@ -52,25 +49,29 @@ public class PlayerRoleManager : NetworkBehaviour
             return;
         Debug.Log($"[Client {base.Owner.ClientId}] Applying role: {assignedRole}");
 
-        // finds the cam in the hierarchy, and then enables it for the client
+        //finds the cam in the hierarchy, and then enables it for the client
         Camera roleCam = GameObject.Find($"{assignedRole}Cam")?.GetComponent<Camera>();
         if (roleCam != null)
         {
-            playerCam.enabled = false; // disable the prefab's built-in cam
+            playerCam.enabled = false; //disable the prefab's built-in cam
             roleCam.enabled = true;
-
-            Canvas canvas = GetComponentInChildren<Canvas>();
-            if (canvas != null) canvas.worldCamera = roleCam;
+            
+            Canvas canvas = roleCam.GetComponentInChildren<Canvas>(true);
+            if (canvas != null)
+            {
+                canvas.gameObject.SetActive(true);
+                canvas.worldCamera = roleCam;
+            }
         }
 
-        // disable role select background
+        //disable role select background
         GameObject bgCanvas = GameObject.Find("RoleSelectionUI-background");
         if (bgCanvas != null)
         {
             bgCanvas.SetActive(false);
         }
 
-        // display role name - temporary for testing
+        //display role name - temporary for testing
         if (roleText != null)
         {
             roleText.text = assignedRole.ToUpper();
@@ -79,8 +80,8 @@ public class PlayerRoleManager : NetworkBehaviour
 
     }
 
-    // method runs on the server but is called by clients
-    // sets the role
+    //method runs on the server but is called by clients
+    //sets the role
     [ServerRpc]
     public void SetRoleServerRpc(string chosenRole)
     {
