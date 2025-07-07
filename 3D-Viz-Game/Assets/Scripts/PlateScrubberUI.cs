@@ -104,7 +104,6 @@ public class PlateScrubberUI : MonoBehaviour,
                 }
             }
         }
-
         dirtTexture.Apply();
     }
 }

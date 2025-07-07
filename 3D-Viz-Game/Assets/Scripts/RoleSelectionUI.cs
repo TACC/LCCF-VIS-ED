@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using FishNet.Managing;
 using System.Collections;
 using FishNet.Object;
+using TMPro;
 
 public class RoleSelectionUI : MonoBehaviour
 {
@@ -11,9 +12,11 @@ public class RoleSelectionUI : MonoBehaviour
     private string selectedRole = "";
     private PlayerRoleManager localPlayer;
     private NetworkManager networkManager;
+    public TextMeshProUGUI stationText;
 
     void Start()
     {
+        stationText.text = "Choose your resturant role";
         StartCoroutine(WaitForClientIdAndHideIfHost());
     }
 

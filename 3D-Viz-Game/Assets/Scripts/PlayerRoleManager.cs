@@ -12,31 +12,35 @@ public class PlayerRoleManager : NetworkBehaviour
     public TextMeshProUGUI roleText;
 
     // this runs every time a player is spawned in multiplayer
-    public override void OnStartNetwork()
+    public override void OnStartClient()
     {
-        base.OnStartNetwork();
+        base.OnStartClient();
 
-        if (!base.Owner.IsLocalClient || base.Owner.ClientId == 0)
+        // if im not the owner
+        if (!base.Owner.IsLocalClient)
         {
-            if (playerCam != null) playerCam.enabled = false;
-            if (roleText != null) roleText.gameObject.SetActive(false);
+            playerCam.enabled = false;
+            roleText.gameObject.SetActive(false);
             return;
         }
 
-        if (base.Owner.IsLocalClient && Owner.ClientId == 0)
+        // if im the owner and the host
+        if (base.Owner.ClientId == 0)
         {
-            Debug.Log("Host running with Resturant camera.");
-            SetRoleServerRpc("Resturant");
+            Debug.Log("Host running with Restaurant camera");
+            ApplyRole("Resturant");
+            SetRoleServerRpc("Restaurant");
             return;
         }
 
-        if (base.Owner.IsLocalClient && string.IsNullOrEmpty(networkRole))
-        {
-            Debug.Log("Client waiting for role selection.");
-        }
+        // if im just a client
+        playerCam.enabled = false;
+        roleText.gameObject.SetActive(true);
+        Debug.Log("Client waiting for role selection.");
+
     }
 
-    
+
     [ObserversRpc]
     private void SyncRoleToClient(string role)
     {
@@ -55,7 +59,7 @@ public class PlayerRoleManager : NetworkBehaviour
         {
             playerCam.enabled = false; //disable the prefab's built-in cam
             roleCam.enabled = true;
-            
+
             Canvas canvas = roleCam.GetComponentInChildren<Canvas>(true);
             if (canvas != null)
             {
@@ -81,7 +85,6 @@ public class PlayerRoleManager : NetworkBehaviour
     }
 
     //method runs on the server but is called by clients
-    //sets the role
     [ServerRpc]
     public void SetRoleServerRpc(string chosenRole)
     {
@@ -98,7 +101,7 @@ public class PlayerRoleManager : NetworkBehaviour
             RoleLockManager.Instance.HardLockRoleServerRpc(chosenRole);
         }
         //RoleLockManager.Instance.HardLockRoleServerRpc(chosenRole);
-        SyncRoleToClient(chosenRole); //double check this
+        SyncRoleToClient(chosenRole);
 
         Debug.Log($"Player {base.Owner.ClientId} assigned role {chosenRole}");
     }
