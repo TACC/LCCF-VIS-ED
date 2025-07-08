@@ -10,7 +10,7 @@ public class PlateScrubberUI : MonoBehaviour,
     public RawImage dirtLayer;
 
     [Header("Texture Settings")]
-    public int textureSize = 256;        
+    public int textureSize = 256;
     public float brushRadius = 50f;
 
     private Texture2D dirtTexture;
@@ -38,16 +38,9 @@ public class PlateScrubberUI : MonoBehaviour,
             return;
         }
 
-        dirtTexture = new Texture2D(
-            srcTex.width,
-            srcTex.height,
-            srcTex.format,
-            /*mipChain=*/ false
-        );
-
+        dirtTexture = new Texture2D(srcTex.width, srcTex.height, srcTex.format, false);
         dirtTexture.SetPixels(srcTex.GetPixels());
         dirtTexture.Apply();
-
         dirtLayer.texture = dirtTexture;
     }
 
@@ -105,5 +98,26 @@ public class PlateScrubberUI : MonoBehaviour,
             }
         }
         dirtTexture.Apply();
+        CheckIfClean();
+    }
+
+    void CheckIfClean()
+    {
+        // grab a fast snapshot of all texels
+        Color32[] pix = dirtTexture.GetPixels32();
+        int dirtyCount = 0;
+        foreach (var p in pix)
+            if (p.a > 10)  // use a tiny threshold to skip antialiasing 
+                dirtyCount++;
+
+        Debug.Log($"[CheckIfClean] remaining dirty pixels: {dirtyCount}");
+        if (dirtyCount > 0)
+            return;
+
+        Debug.Log("✅ Plate fully clean — destroying!");
+        // DESTROY THE WHOLE PLATE, not just the overlay:
+        Destroy(transform.parent != null
+                ? transform.parent.gameObject
+                : gameObject);
     }
 }

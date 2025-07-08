@@ -28,7 +28,7 @@ public class PlayerRoleManager : NetworkBehaviour
         if (base.Owner.ClientId == 0)
         {
             Debug.Log("Host running with Restaurant camera");
-            ApplyRole("Resturant");
+            ApplyRole("Restaurant");
             SetRoleServerRpc("Restaurant");
             return;
         }
