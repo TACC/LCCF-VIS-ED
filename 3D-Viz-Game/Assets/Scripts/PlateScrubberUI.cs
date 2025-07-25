@@ -11,7 +11,7 @@ public class PlateScrubberUI : MonoBehaviour,
 
     [Header("Texture Settings")]
     public int textureSize = 256;
-    public float brushRadius = 100f;
+    public float brushRadius = 50f;
 
     private Texture2D dirtTexture;
     private bool isScrubbing = false;
@@ -103,19 +103,19 @@ public class PlateScrubberUI : MonoBehaviour,
 
     void CheckIfClean()
     {
+        // grab a fast snapshot of all texels
         Color32[] pix = dirtTexture.GetPixels32();
         int dirtyCount = 0;
-        //threshold
         foreach (var p in pix)
-            if (p.a > 10)
+            if (p.a > 10)  // use a tiny threshold to skip antialiasing 
                 dirtyCount++;
 
         Debug.Log($"[CheckIfClean] remaining dirty pixels: {dirtyCount}");
-        if (dirtyCount > 1000)
+        if (dirtyCount > 0)
             return;
 
-        Debug.Log("Plate fully clean — destroying!");
-        //destroy entire plate
+        Debug.Log("✅ Plate fully clean — destroying!");
+        // DESTROY THE WHOLE PLATE, not just the overlay:
         Destroy(transform.parent != null
                 ? transform.parent.gameObject
                 : gameObject);

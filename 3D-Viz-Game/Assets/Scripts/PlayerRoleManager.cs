@@ -4,7 +4,6 @@ using TMPro;
 using UnityEngine.UI;
 using Unity.Collections;
 using System.Collections.Generic;
-using FishNet.Connection;
 
 public class PlayerRoleManager : NetworkBehaviour
 {
@@ -25,14 +24,14 @@ public class PlayerRoleManager : NetworkBehaviour
             return;
         }
 
-        // // if im the owner and the host
-        // if (base.Owner.ClientId == 0)
-        // {
-        //     Debug.Log("Host running with Restaurant camera");
-        //     ApplyRole("Restaurant");
-        //     SetRoleServerRpc("Restaurant");
-        //     return;
-        // }
+        // if im the owner and the host
+        if (base.Owner.ClientId == 0)
+        {
+            Debug.Log("Host running with Restaurant camera");
+            ApplyRole("Restaurant");
+            SetRoleServerRpc("Restaurant");
+            return;
+        }
 
         // if im just a client
         playerCam.enabled = false;
@@ -101,11 +100,12 @@ public class PlayerRoleManager : NetworkBehaviour
         {
             RoleLockManager.Instance.HardLockRoleServerRpc(chosenRole);
         }
-        
+        //RoleLockManager.Instance.HardLockRoleServerRpc(chosenRole);
         SyncRoleToClient(chosenRole);
 
         Debug.Log($"Player {base.Owner.ClientId} assigned role {chosenRole}");
     }
 
 }
+
 
