@@ -32,18 +32,21 @@ public class RoleSelectionUI : MonoBehaviour
             yield return null;
         }
 
-        // don't let 1st client join, that should be the resaurant
-        // if (networkManager.ClientManager.Connection.ClientId == 0)
-        // {
-        //     Debug.Log("Host detected — hiding RoleSelectionUI.");
-        //     gameObject.SetActive(false);
-        //     GameObject bgCanvas = GameObject.Find("RoleSelectionUI-background");
-        //     if (bgCanvas != null)
-        //     {
-        //         bgCanvas.SetActive(false);
-        //     }
-        //     yield break;
-        // }
+        // host: server + client + ClientId == 0
+        // don't let the host pick a role.
+        if (networkManager.IsServerStarted &&
+            networkManager.IsClientStarted &&
+            networkManager.ClientManager.Connection.ClientId == 0)
+        {
+            Debug.Log("Host detected — hiding RoleSelectionUI.");
+            gameObject.SetActive(false);
+            GameObject bgCanvas = GameObject.Find("RoleSelectionUI-background");
+            if (bgCanvas != null)
+            {
+                bgCanvas.SetActive(false);
+            }
+            yield break;
+        }
 
         Debug.Log("Client detected — initializing RoleSelectionUI.");
         InitUI();
