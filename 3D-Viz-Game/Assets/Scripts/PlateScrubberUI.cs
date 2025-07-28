@@ -6,10 +6,9 @@ using UnityEngine.EventSystems;
 public class PlateScrubberUI : MonoBehaviour,
     IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
-    [Tooltip("Assign the RawImage component for this dirt layer")]
     public RawImage dirtLayer;
 
-    [Header("Texture Settings")]
+    // actually set in the inspector
     public int textureSize = 256;
     public float brushRadius = 50f;
 
@@ -32,12 +31,6 @@ public class PlateScrubberUI : MonoBehaviour,
     {
         //texture must have read/write enabled in the inspector
         var srcTex = dirtLayer.texture as Texture2D;
-        if (srcTex == null || !srcTex.isReadable)
-        {
-            Debug.LogError("DirtOverlay.texture must be a readable Texture2D!");
-            return;
-        }
-
         dirtTexture = new Texture2D(srcTex.width, srcTex.height, srcTex.format, false);
         dirtTexture.SetPixels(srcTex.GetPixels());
         dirtTexture.Apply();
@@ -103,19 +96,17 @@ public class PlateScrubberUI : MonoBehaviour,
 
     void CheckIfClean()
     {
-        // grab a fast snapshot of all texels
         Color32[] pix = dirtTexture.GetPixels32();
         int dirtyCount = 0;
         foreach (var p in pix)
-            if (p.a > 10)  // use a tiny threshold to skip antialiasing 
+            if (p.a > 250)
                 dirtyCount++;
 
-        Debug.Log($"[CheckIfClean] remaining dirty pixels: {dirtyCount}");
+        //Debug.Log($"remaining dirty pixels: {dirtyCount}");
         if (dirtyCount > 0)
             return;
 
-        Debug.Log("✅ Plate fully clean — destroying!");
-        // DESTROY THE WHOLE PLATE, not just the overlay:
+        Debug.Log("Plate fully clean");
         Destroy(transform.parent != null
                 ? transform.parent.gameObject
                 : gameObject);

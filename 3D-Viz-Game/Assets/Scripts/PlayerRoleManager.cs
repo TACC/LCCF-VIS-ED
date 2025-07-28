@@ -9,7 +9,6 @@ public class PlayerRoleManager : NetworkBehaviour
 {
     private string networkRole = "";
     public Camera playerCam;
-    public TextMeshProUGUI roleText;
 
     // this runs every time a player is spawned in multiplayer
     public override void OnStartClient()
@@ -20,23 +19,12 @@ public class PlayerRoleManager : NetworkBehaviour
         if (!base.Owner.IsLocalClient)
         {
             playerCam.enabled = false;
-            roleText.gameObject.SetActive(false);
-            return;
-        }
-
-        // if im the owner and the host
-        if (base.Owner.ClientId == 0)
-        {
-            Debug.Log("Host running with Restaurant camera");
-            ApplyRole("Restaurant");
-            SetRoleServerRpc("Restaurant");
             return;
         }
 
         // if im just a client
         playerCam.enabled = false;
-        roleText.gameObject.SetActive(true);
-        Debug.Log("Client waiting for role selection.");
+        //Debug.Log("Client waiting for role selection.");
 
     }
 
@@ -51,7 +39,7 @@ public class PlayerRoleManager : NetworkBehaviour
     {
         if (!IsOwner)
             return;
-        Debug.Log($"[Client {base.Owner.ClientId}] Applying role: {assignedRole}");
+        //Debug.Log($"[Client {base.Owner.ClientId}] Applying role: {assignedRole}");
 
         //finds the cam in the hierarchy, and then enables it for the client
         Camera roleCam = GameObject.Find($"{assignedRole}Cam")?.GetComponent<Camera>();
@@ -74,13 +62,7 @@ public class PlayerRoleManager : NetworkBehaviour
         {
             bgCanvas.SetActive(false);
         }
-
-        //display role name - temporary for testing
-        if (roleText != null)
-        {
-            roleText.text = assignedRole.ToUpper();
-        }
-        Debug.Log($"[Client {base.Owner.ClientId}] Spawned as {assignedRole}");
+        //Debug.Log($"[Client {base.Owner.ClientId}] Spawned as {assignedRole}");
 
     }
 
@@ -96,11 +78,11 @@ public class PlayerRoleManager : NetworkBehaviour
 
         //set the values that we want saved and shared
         networkRole = chosenRole;
-        if (base.Owner.ClientId != 0)
-        {
-            RoleLockManager.Instance.HardLockRoleServerRpc(chosenRole);
-        }
-        //RoleLockManager.Instance.HardLockRoleServerRpc(chosenRole);
+        // if (base.Owner.ClientId != 0)
+        // {
+        //     RoleLockManager.Instance.HardLockRoleServerRpc(chosenRole);
+        // }
+        RoleLockManager.Instance.HardLockRoleServerRpc(chosenRole);
         SyncRoleToClient(chosenRole);
 
         Debug.Log($"Player {base.Owner.ClientId} assigned role {chosenRole}");
