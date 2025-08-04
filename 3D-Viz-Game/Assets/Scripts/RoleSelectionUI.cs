@@ -16,7 +16,7 @@ public class RoleSelectionUI : MonoBehaviour
 
     void Start()
     {
-        stationText.text = "Choose your resturant role";
+        stationText.text = "Choose your Restaurant role";
         StartCoroutine(WaitForClientIdAndHideIfHost());
     }
 
@@ -32,23 +32,7 @@ public class RoleSelectionUI : MonoBehaviour
             yield return null;
         }
 
-        // host: server + client + ClientId == 0
-        // don't let the host pick a role.
-        if (networkManager.IsServerStarted &&
-            networkManager.IsClientStarted &&
-            networkManager.ClientManager.Connection.ClientId == 0)
-        {
-            Debug.Log("Host detected — hiding RoleSelectionUI.");
-            gameObject.SetActive(false);
-            GameObject bgCanvas = GameObject.Find("RoleSelectionUI-background");
-            if (bgCanvas != null)
-            {
-                bgCanvas.SetActive(false);
-            }
-            yield break;
-        }
-
-        Debug.Log("Client detected — initializing RoleSelectionUI.");
+        //Debug.Log("Client detected — initializing RoleSelectionUI.");
         InitUI();
     }
 
@@ -101,6 +85,7 @@ public class RoleSelectionUI : MonoBehaviour
             int localClientId = networkManager.ClientManager.Connection.ClientId;
             if (RoleLockManager.Instance.IsRoleTaken(selectedRole, localClientId))
             {
+                // add UI logic to 
                 Debug.LogWarning($"Role {selectedRole} is already taken");
                 return;
             }
