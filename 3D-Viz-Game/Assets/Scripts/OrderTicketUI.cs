@@ -9,7 +9,7 @@ public class OrderTicketUI : MonoBehaviour
     [System.Serializable]
     public class IngredientDropdownPair
     {
-        public string ingredientName;
+        public string ingredientName;   // unused by logic; kept for your UI
         public TMP_Dropdown dropdown;
     }
 
@@ -17,11 +17,14 @@ public class OrderTicketUI : MonoBehaviour
     public List<IngredientDropdownPair> ingredientDropdowns = new List<IngredientDropdownPair>();
 
     [Header("UI References")]
-    public GameObject incorrectOverlay;         // Assign the grey overlay panel
-    public TMP_Text incorrectText;              // Assign the "Incorrect!" label
-    public Button retryButton;                  // Assign the retry button
-    public TMP_Text retryButtonLabel;           // Assign the retry button's label
-    public NPCOrderManager npcOrderManager;     // Reference to regenerate new orders
+    public GameObject incorrectOverlay;   // grey overlay panel
+    public TMP_Text incorrectText;        // "Incorrect!" label
+    public Button retryButton;            // retry button
+    public TMP_Text retryButtonLabel;     // retry button text
+
+    [Header("Order Managers (assign ONE)")]
+    public NPCOrderManager npcOrderManager;                 // original 2D manager
+    public NPCOrderManager_Single npcOrderManagerSingle;    // new single-NPC manager
 
     private List<string> correctValues;
 
@@ -29,6 +32,7 @@ public class OrderTicketUI : MonoBehaviour
     {
         correctValues = correct;
 
+        // build 3 fake values with different units (same as before)
         List<string> fakeValues = new List<string>
         {
             Random.Range(1, 61) + "g",
@@ -36,6 +40,7 @@ public class OrderTicketUI : MonoBehaviour
             Random.Range(1, 61) + "oz"
         };
 
+        // avoid collisions with real answers
         for (int i = 0; i < fakeValues.Count; i++)
         {
             while (correctValues.Contains(fakeValues[i]))
@@ -46,6 +51,7 @@ public class OrderTicketUI : MonoBehaviour
             }
         }
 
+        // shuffle all options (blank first)
         List<string> answerOptions = new List<string>(correctValues);
         answerOptions.AddRange(fakeValues);
         ShuffleList(answerOptions);
@@ -53,8 +59,10 @@ public class OrderTicketUI : MonoBehaviour
         List<string> allOptions = new List<string> { "" }; // Option A = blank
         allOptions.AddRange(answerOptions);
 
+        // apply to every dropdown row
         foreach (var pair in ingredientDropdowns)
         {
+            if (pair.dropdown == null) continue;
             pair.dropdown.ClearOptions();
             pair.dropdown.AddOptions(allOptions);
             pair.dropdown.value = 0;
@@ -64,41 +72,47 @@ public class OrderTicketUI : MonoBehaviour
 
     public void CheckAnswers()
     {
+        // compare selections to correctValues by index (same as before)
         for (int i = 0; i < ingredientDropdowns.Count; i++)
         {
-            var selected = ingredientDropdowns[i].dropdown.options[ingredientDropdowns[i].dropdown.value].text;
-            if (selected != correctValues[i])
+            var dd = ingredientDropdowns[i].dropdown;
+            if (dd == null || dd.options.Count == 0) { StartCoroutine(ShowIncorrectOverlay()); return; }
+
+            var selected = dd.options[dd.value].text;
+            if (i >= correctValues.Count || selected != correctValues[i])
             {
                 StartCoroutine(ShowIncorrectOverlay());
                 return;
             }
         }
 
-        // ✅ Player got everything right
-        npcOrderManager.ShowThanksAndReset();
+        // ✅ Correct — call whichever manager is assigned
+        if (npcOrderManagerSingle != null) npcOrderManagerSingle.ShowThanksAndReset();
+        else if (npcOrderManager != null)  npcOrderManager.ShowThanksAndReset();
+        else Debug.LogWarning("OrderTicketUI: No order manager assigned to receive success.");
     }
 
     private IEnumerator ShowIncorrectOverlay()
     {
-        incorrectOverlay.SetActive(true);
-        retryButton.interactable = false;
+        if (incorrectOverlay) incorrectOverlay.SetActive(true);
+        if (retryButton) retryButton.interactable = false;
 
         int countdown = 3;
         while (countdown > 0)
         {
-            retryButtonLabel.text = $"Retry ({countdown})";
+            if (retryButtonLabel) retryButtonLabel.text = $"Retry ({countdown})";
             yield return new WaitForSeconds(1f);
             countdown--;
         }
 
-        retryButtonLabel.text = "Retry";
-        retryButton.interactable = true;
+        if (retryButtonLabel) retryButtonLabel.text = "Retry";
+        if (retryButton) retryButton.interactable = true;
     }
 
     public void Retry()
     {
-        incorrectOverlay.SetActive(false);
-        // dropdown values stay the same
+        if (incorrectOverlay) incorrectOverlay.SetActive(false);
+        // keep current dropdown selections
     }
 
     private void ShuffleList(List<string> list)
