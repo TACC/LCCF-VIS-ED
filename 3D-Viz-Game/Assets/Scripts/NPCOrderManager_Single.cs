@@ -36,7 +36,16 @@ public class NPCOrderManager_Single : MonoBehaviour
 
     void Start()
     {
+        EnsureSessionAndMode();   // start 2–3 min session if needed, set Ordering mode
         GenerateOrder();
+    }
+
+    private void EnsureSessionAndMode()
+    {
+        if (GameSession.Instance == null) return;
+        if (!GameSession.Instance.SessionRunning)
+            GameSession.Instance.StartSession(150); // 2.5 min default; adjust if you like
+        GameSession.Instance.SetMode(GameMode.Ordering);
     }
 
     public void GenerateOrder()
@@ -53,12 +62,15 @@ public class NPCOrderManager_Single : MonoBehaviour
             string line = $"I'll take {ingredient.assignedValue}{ingredient.unit} of {ingredient.name}.";
             npcOrderLines.Add(line);
 
-            // This is the contract the ticket expects: value + unit, in row order
+            // Contract the ticket expects: value + unit, in row order
             correctValues.Add($"{ingredient.assignedValue}{ingredient.unit}");
         }
 
         ShuffleList(npcOrderLines);
         if (orderTicketUI) orderTicketUI.PopulateDropdowns(correctValues);
+
+        // Start the hidden 30s timer for THIS ticket
+        if (GameSession.Instance != null) GameSession.Instance.StartTask();
 
         StopAllCoroutines();
         StartCoroutine(DisplayOrderLinesWithTyping());
@@ -100,12 +112,25 @@ public class NPCOrderManager_Single : MonoBehaviour
         }
     }
 
-    // Called by the ticket when answers are correct
+    // 🔹 Call this when the ticket marks the submission CORRECT (you already call this today)
     public void ShowThanksAndReset()
     {
+        // Finish the task: +100, +5 bonus if ≤30s
+        if (GameSession.Instance != null) GameSession.Instance.CompleteTask(true);
+
         if (orderText) orderText.text = "Thanks!";
         if (scrollRect) scrollRect.verticalNormalizedPosition = 1f;
         StartCoroutine(DelayThenSwap());
+    }
+
+    // 🔹 Call this when the player submits a WRONG answer (no task end; just penalty)
+    public void RegisterWrongAttempt()
+    {
+        // Apply -10 immediately WITHOUT ending the current 30s window
+        if (GameSession.Instance != null)
+        {
+            GameSession.Instance.AddPenalty(-10); // see tiny patch to GameSession at bottom
+        }
     }
 
     private IEnumerator DelayThenSwap()
@@ -113,7 +138,7 @@ public class NPCOrderManager_Single : MonoBehaviour
         yield return new WaitForSeconds(2f);
 
         // Hand off to whichever NPC controller you’re using
-        if (singleNpcManager) singleNpcManager.BeginNextRound();  // 3D single NPC
+        if (singleNpcManager) singleNpcManager.BeginNextRound();   // 3D single NPC
         else if (legacy2DNpcManager) legacy2DNpcManager.SwapNPCs(); // old 2D flow
         else GenerateOrder(); // fallback: just make a new order
     }

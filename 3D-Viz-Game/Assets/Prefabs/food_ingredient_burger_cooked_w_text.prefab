@@ -104,8 +104,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mode: 0
+  depthMode: 0
+  dragCamera: {fileID: 0}
   spawnPoint: {fileID: 0}
   stackManager: {fileID: 0}
+  burgerClampX: {x: -3.3, y: 3.3}
+  burgerClampY: {x: 0.5, y: 2.5}
+  sortingClampX: {x: -3, y: 3}
+  sortingClampY: {x: -1, y: 2.8}
+  keepKinematicAlways: 1
+  freezeZConstraint: 0
   ingredientValue: 0
 --- !u!114 &4562119829291254383
 MonoBehaviour:
