@@ -75,6 +75,22 @@ public class ConveyorManager3D : MonoBehaviour
             Debug.LogWarning("[ConveyorManager3D] feedbackCubes count should match slots count.", this);
     }
 
+    void Start()
+    {
+        EnsureSessionAndMode();
+        // If your spawner starts the first round on its own, ask it to notify us:
+        // spawner.OnRoundSpawned += NotifyRoundBegan;  (if you add such an event)
+        // Otherwise, you can trigger the first round from here, then StartTask() yourself.
+    }
+
+    private void EnsureSessionAndMode()
+    {
+        if (GameSession.Instance == null) return;
+        if (!GameSession.Instance.SessionRunning)
+            GameSession.Instance.StartSession(150);
+        GameSession.Instance.SetMode(GameMode.Sorting);
+    }
+
     void OnDisable() { if (Instance == this) Instance = null; }
     void OnDestroy() { if (Instance == this) Instance = null; }
 
@@ -88,6 +104,17 @@ public class ConveyorManager3D : MonoBehaviour
             var r = feedbackCubes[i];
             _originalMats[i] = r ? (Material[])r.sharedMaterials.Clone() : null;
         }
+    }
+
+    // ============================
+    // Round start hook
+    // ============================
+    // Call this AFTER your spawner finishes placing the items for a new round.
+    public void NotifyRoundBegan()
+    {
+        EnsureSessionAndMode();
+        if (GameSession.Instance != null) GameSession.Instance.StartTask(); // hidden 15s timer
+        if (debugLogs) Debug.Log("[ConveyorManager3D] Round began → StartTask()", this);
     }
 
     // ============================
@@ -198,11 +225,42 @@ public class ConveyorManager3D : MonoBehaviour
         }
     }
 
+    int CountCorrectAgainstSorted()
+    {
+        if (occupied == null || occupied.Length == 0) return 0;
+
+        var current = new List<int>(occupied.Length);
+        for (int i = 0; i < occupied.Length; i++)
+            current.Add(occupied[i] ? occupied[i].value : int.MinValue);
+
+        var sorted = new List<int>(current);
+        if (order == SortOrder.AscendingRightToLeft) sorted.Sort();
+        else sorted.Sort((a, b) => b.CompareTo(a));
+
+        int n = 0;
+        for (int i = 0; i < current.Count; i++)
+            if (occupied[i] && current[i] == sorted[i]) n++;
+
+        return n;
+    }
+
     IEnumerator CheckThenClearCo()
     {
         yield return new WaitForSeconds(0.15f); // settle
 
         bool overallOk = IsCorrectOrder();
+        int correctCount = CountCorrectAgainstSorted();
+
+        // ----- SCORING -----
+        if (GameSession.Instance != null)
+        {
+            // +10 per correct item
+            GameSession.Instance.AwardSortingBatch(correctCount);
+            // Time bonus (+5 under 15s) always for a completed round, and +20 extra if ALL correct
+            bool allCorrect = (correctCount == occupied.Length);
+            GameSession.Instance.CompleteTask(true, allCorrect);
+        }
+
         if (debugLogs) Debug.Log(overallOk ? "✅ Correct order!" : "❌ Wrong order!");
 
         // Per-slot feedback (green = correct, red = wrong)
@@ -307,6 +365,9 @@ public class ConveyorManager3D : MonoBehaviour
     {
         yield return new WaitForSeconds(nextRoundDelay);
         spawner.SpawnRound();
+        // After the spawner places new items, begin timing this round:
+        NotifyRoundBegan();
+
         if (debugLogs) Debug.Log("[ConveyorManager3D] SpawnRound() called.");
     }
 
