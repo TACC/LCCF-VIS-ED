@@ -23,7 +23,7 @@ public class BurgerIngredientSpawner : MonoBehaviour
     [SerializeField] private BurgerStackManager stackManager;
 
     [Header("Plate System")]
-    [SerializeField] private GameObject plateGroup; // Current plate + bottom bun in scene
+    [SerializeField] private GameObject plateGroup;          // Current plate + bottom bun in scene
     [SerializeField] private GameObject newPlateGroupPrefab; // Prefab to spawn
     [SerializeField] private Transform spawnPointLeft;
     [SerializeField] private Transform finalPlatePosition;
@@ -44,12 +44,21 @@ public class BurgerIngredientSpawner : MonoBehaviour
 
     public void SpawnRound()
     {
+        // Remove leftovers from last step
         ClearUnusedItems();
 
         if (currentStep >= ingredientSequence.Length)
         {
             Submit();
             return;
+        }
+
+        // ✅ Start per-burger timer only at the first step of a new burger
+        if (currentStep == 0 && GameSession.Instance != null)
+        {
+            if (!GameSession.Instance.SessionRunning) GameSession.Instance.StartSession(150);
+            GameSession.Instance.SetMode(GameMode.Burger);
+            GameSession.Instance.StartTask();   // enables time bonus window
         }
 
         int prefabIndex = ingredientSequence[currentStep];
@@ -59,14 +68,24 @@ public class BurgerIngredientSpawner : MonoBehaviour
         List<int> numberOptions = GenerateUniqueRandomNumbersExcluding(2, 1, 99, correctNumber);
         numberOptions.Insert(Random.Range(0, numberOptions.Count + 1), correctNumber);
 
+        // Spawn choices for this step
         for (int i = 0; i < spawnPoints.Length; i++)
         {
-            GameObject clone = Instantiate(prefabToUse, spawnPoints[i].position, prefabToUse.transform.rotation);
+            Transform sp = spawnPoints[i];
+
+            GameObject clone = Instantiate(prefabToUse, sp.position, sp.rotation);
+
+            // Snap to spawnPoint
+            clone.transform.SetParent(sp, worldPositionStays: false);
+            clone.transform.localPosition = Vector3.zero;
+            clone.transform.localRotation = Quaternion.identity;
+            clone.transform.localScale    = prefabToUse.transform.localScale;
 
             var drag = clone.GetComponent<DragHandler3D>();
             if (drag != null)
             {
-                drag.SetSpawnPoint(spawnPoints[i]);
+                drag.mode = DragHandler3D.DragMode.BurgerBuild;
+                drag.SetSpawnPoint(sp);
                 drag.MarkInStack(false);
             }
 
@@ -88,9 +107,7 @@ public class BurgerIngredientSpawner : MonoBehaviour
     {
         correctNumbers.Clear();
         for (int i = 0; i < ingredientSequence.Length; i++)
-        {
             correctNumbers.Add(Random.Range(1, 100));
-        }
     }
 
     private void DisplayFullOrder()
@@ -109,8 +126,7 @@ public class BurgerIngredientSpawner : MonoBehaviour
         while (numbers.Count < count)
         {
             int num = Random.Range(min, max);
-            if (num != exclude)
-                numbers.Add(num);
+            if (num != exclude) numbers.Add(num);
         }
         return new List<int>(numbers);
     }
@@ -118,28 +134,28 @@ public class BurgerIngredientSpawner : MonoBehaviour
     private void SetNumberOnPrefab(GameObject obj, int number)
     {
         TextMeshProUGUI text = obj.GetComponentInChildren<TextMeshProUGUI>();
-        if (text != null)
-        {
-            text.text = number.ToString();
-        }
+        if (text != null) text.text = number.ToString();
     }
 
+    // --- Cleanup of previous options ---
     public void ClearUnusedItems()
     {
-        GameObject[] leftovers = GameObject.FindGameObjectsWithTag("InSpawn");
-        foreach (GameObject item in leftovers)
-        {
-            Destroy(item);
-        }
+        foreach (var item in activeFoodItems)
+            if (item != null) Destroy(item);
         activeFoodItems.Clear();
     }
 
     public void RemoveFromActiveItems(GameObject item)
     {
         if (activeFoodItems.Contains(item))
-        {
             activeFoodItems.Remove(item);
-        }
+    }
+
+    public void ReAddToActiveItems(GameObject item)
+    {
+        if (item == null) return;
+        if (!activeFoodItems.Contains(item))
+            activeFoodItems.Add(item);
     }
 
     public void Next()
@@ -149,7 +165,6 @@ public class BurgerIngredientSpawner : MonoBehaviour
             Debug.Log("Must place an item before continuing.");
             return;
         }
-
         currentStep++;
         SpawnRound();
     }
@@ -157,14 +172,12 @@ public class BurgerIngredientSpawner : MonoBehaviour
     public void NotifyIngredientPlaced(GameObject placedItem)
     {
         hasPlacedItem = true;
-        if (nextButton != null)
-            nextButton.interactable = true;
+        if (nextButton != null) nextButton.interactable = true;
     }
 
     public void Submit()
     {
         GameObject[] items = stackManager.GetStackedItems();
-
         if (items.Any(i => i == null))
         {
             Debug.LogWarning("Stack incomplete!");
@@ -172,7 +185,6 @@ public class BurgerIngredientSpawner : MonoBehaviour
         }
 
         bool isCorrect = true;
-
         for (int i = 0; i < items.Length; i++)
         {
             TextMeshProUGUI label = items[i].GetComponentInChildren<TextMeshProUGUI>();
@@ -188,17 +200,17 @@ public class BurgerIngredientSpawner : MonoBehaviour
             }
         }
 
-        if (isCorrect)
+        // ✅ Score here using your existing correctness result
+        if (GameSession.Instance != null)
         {
-            StartCoroutine(SlideBurgerOffScreen(Vector3.right));
-        }
-        else
-        {
-            StartCoroutine(ExplodeBurgerAndReset());
+            GameSession.Instance.SetMode(GameMode.Burger);   // safety
+            GameSession.Instance.CompleteTask(isCorrect);    // +100 or −10 (+bonus if fast)
         }
 
-        if (nextButton != null)
-            nextButton.interactable = false;
+        if (isCorrect) StartCoroutine(SlideBurgerOffScreen(Vector3.right));
+        else           StartCoroutine(ExplodeBurgerAndReset());
+
+        if (nextButton != null) nextButton.interactable = false;
     }
 
     private IEnumerator SlideBurgerOffScreen(Vector3 direction, float distance = 10f, float duration = 0.5f)
@@ -217,20 +229,15 @@ public class BurgerIngredientSpawner : MonoBehaviour
             float t = elapsed / duration;
 
             for (int i = 0; i < items.Length; i++)
-            {
                 if (items[i] != null)
                     items[i].transform.position = Vector3.Lerp(startPositions[i], startPositions[i] + direction * distance, t);
-            }
 
             plateGroup.transform.position = Vector3.Lerp(plateStart, plateStart + direction * distance, t);
             yield return null;
         }
 
         foreach (GameObject item in items)
-        {
-            if (item != null)
-                Destroy(item);
-        }
+            if (item != null) Destroy(item);
 
         Destroy(plateGroup);
 
@@ -252,28 +259,21 @@ public class BurgerIngredientSpawner : MonoBehaviour
         foreach (GameObject item in items)
         {
             if (item == null) continue;
-
-            Rigidbody rb = item.GetComponent<Rigidbody>();
-            if (rb == null) rb = item.AddComponent<Rigidbody>();
-
-            rb.isKinematic = false; // 💥 this allows it to be affected by physics
+            Rigidbody rb = item.GetComponent<Rigidbody>() ?? item.AddComponent<Rigidbody>();
+            rb.isKinematic = false;
             rb.useGravity = true;
             rb.constraints = RigidbodyConstraints.None;
-
             rb.AddExplosionForce(explosionForce, explosionCenter, explosionRadius, 0.5f, ForceMode.Impulse);
             rb.AddForce(Vector3.up * 4f, ForceMode.Impulse);
-            rb.AddTorque(Random.insideUnitSphere * 5f, ForceMode.Impulse); // 🔁 adds spin
+            rb.AddTorque(Random.insideUnitSphere * 5f, ForceMode.Impulse);
         }
 
         if (plateGroup != null)
         {
-            Rigidbody rb = plateGroup.GetComponent<Rigidbody>();
-            if (rb == null) rb = plateGroup.AddComponent<Rigidbody>();
-
+            Rigidbody rb = plateGroup.GetComponent<Rigidbody>() ?? plateGroup.AddComponent<Rigidbody>();
             rb.isKinematic = false;
             rb.useGravity = true;
             rb.constraints = RigidbodyConstraints.None;
-
             rb.AddExplosionForce(explosionForce * 0.8f, explosionCenter, explosionRadius, 0.5f, ForceMode.Impulse);
             rb.AddTorque(Random.insideUnitSphere * 4f, ForceMode.Impulse);
         }
@@ -281,9 +281,7 @@ public class BurgerIngredientSpawner : MonoBehaviour
         yield return new WaitForSeconds(1.2f);
 
         foreach (GameObject item in items)
-        {
             if (item != null) Destroy(item);
-        }
 
         if (plateGroup != null) Destroy(plateGroup);
 
