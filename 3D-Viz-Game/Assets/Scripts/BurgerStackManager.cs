@@ -39,35 +39,43 @@ public class BurgerStackManager : MonoBehaviour
 
     // 🔹 Call this from your Submit button/controller with your computed result
     public void OnSubmitBurger(bool isCorrect)
-    {
-        if (GameSession.Instance != null)
-            GameSession.Instance.CompleteTask(isCorrect);   // +100/−10, +5 if ≤15s
+{
+    Debug.Log($"[BurgerStackManager] Submit pressed. isCorrect={isCorrect}");
 
-        // Your existing "correct → slide off" or "wrong → explode/fall" flows continue as-is.
+    if (GameSession.Instance != null)
+    {
+        int before = GameSession.Instance.Score;
+        GameSession.Instance.SetMode(GameMode.Burger);   // safety
+        GameSession.Instance.CompleteTask(isCorrect);    // +100/−10 (+bonus if fast)
+        Debug.Log($"[BurgerStackManager] Score {before} -> {GameSession.Instance.Score}");
     }
+    else
+    {
+        Debug.LogWarning("[BurgerStackManager] No GameSession instance.");
+    }
+    // slide/explode handled elsewhere
+}
+
 
     public void StackItem(GameObject newItem)
     {
-        string newType = newItem.name.Replace("(Clone)", "").Trim();
+        string newType = CleanType(newItem.name);
 
         // Replace same-type item if found
         for (int i = 0; i < stackedItems.Length; i++)
         {
             GameObject existing = stackedItems[i];
-            if (existing != null && existing.name.Replace("(Clone)", "").Trim() == newType)
+            if (existing != null && CleanType(existing.name) == newType)
             {
-                var drag = existing.GetComponent<DragHandler3D>();
-                if (drag != null)
-                {
-                    drag.ResetToSpawnPoint();
-                    drag.enabled = true;
-                }
+                // ⬅️ send old piece back to spawn AND re-add to active list
+                EvictToSpawn(existing);
 
+                // occupy this slot with the new item
                 stackedItems[i] = newItem;
 
-                // 🔻 Hide number label
-                TextMeshProUGUI label = newItem.GetComponentInChildren<TextMeshProUGUI>();
-                if (label != null) label.enabled = false;
+                // hide number label on the newly stacked item
+                var labelNew = newItem.GetComponentInChildren<TextMeshProUGUI>();
+                if (labelNew != null) labelNew.enabled = false;
 
                 MoveAndMark(newItem, stackPositions[i]);
                 return;
@@ -81,9 +89,8 @@ public class BurgerStackManager : MonoBehaviour
             {
                 stackedItems[i] = newItem;
 
-                // 🔻 Hide number label
-                TextMeshProUGUI label = newItem.GetComponentInChildren<TextMeshProUGUI>();
-                if (label != null) label.enabled = false;
+                var labelNew = newItem.GetComponentInChildren<TextMeshProUGUI>();
+                if (labelNew != null) labelNew.enabled = false;
 
                 MoveAndMark(newItem, stackPositions[i]);
                 return;
@@ -92,6 +99,8 @@ public class BurgerStackManager : MonoBehaviour
 
         Debug.LogWarning("No empty stack slots available.");
     }
+
+    private static string CleanType(string raw) => raw.Replace("(Clone)", "").Trim();
 
     private void MoveAndMark(GameObject item, Transform point)
     {
@@ -103,6 +112,8 @@ public class BurgerStackManager : MonoBehaviour
         }
 
         StartCoroutine(MoveToTarget(item.transform, point.position, point.rotation));
+
+        // tell the spawner this choice was used; it should NOT be cleared on Next
         spawner?.NotifyIngredientPlaced(item);
         spawner?.RemoveFromActiveItems(item);
     }
@@ -125,6 +136,25 @@ public class BurgerStackManager : MonoBehaviour
 
         item.position = pos;
         item.rotation = rot;
+    }
+
+    // 🔧 unified eviction path that ensures the item is cleared AND tracked for cleanup
+    private void EvictToSpawn(GameObject item)
+    {
+        var drag = item.GetComponent<DragHandler3D>();
+        if (drag != null)
+        {
+            drag.enabled = true;
+            drag.MarkInStack(false);      // back to spawn state (also sets tag)
+            drag.ResetToSpawnPoint();     // handles reparent + snap/lerp back
+        }
+
+        // show its number again in spawn
+        var label = item.GetComponentInChildren<TextMeshProUGUI>();
+        if (label != null) label.enabled = true;
+
+        // so ClearUnusedItems() can destroy it on Next
+        spawner?.ReAddToActiveItems(item);
     }
 
     public void RemoveFromStack(GameObject item)
