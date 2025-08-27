@@ -9,36 +9,55 @@ public class OrderTicketUI : MonoBehaviour
     [System.Serializable]
     public class IngredientDropdownPair
     {
-        public string ingredientName;
-        public TMP_Dropdown dropdown;
+        [Header("Row Wiring")]
+        public string ingredientName;        // e.g., "Lettuce"
+        public TMP_Dropdown dropdown;        // player's choice control
+
+        [Tooltip("Container of the row (so we can hide it when correct). Optional.")]
+        public GameObject rowRoot;
+
+        [Tooltip("If provided, we can gray-out/lock instead of hiding.")]
+        public CanvasGroup rowCanvasGroup;
     }
 
-    [Header("Dropdown Mapping")]
+    [Header("Dropdown Mapping (order must match 'correctValues' from NPC manager)")]
     public List<IngredientDropdownPair> ingredientDropdowns = new List<IngredientDropdownPair>();
 
-    [Header("UI References")]
-    public GameObject incorrectOverlay;         // Assign the grey overlay panel
-    public TMP_Text incorrectText;              // Assign the "Incorrect!" label
-    public Button retryButton;                  // Assign the retry button
-    public TMP_Text retryButtonLabel;           // Assign the retry button's label
-    public NPCOrderManager npcOrderManager;     // Reference to regenerate new orders
+    [Header("Legacy Incorrect Overlay (kept for compatibility; unused by default)")]
+    public GameObject incorrectOverlay;
+    public TMP_Text incorrectText;
+    public Button retryButton;
+    public TMP_Text retryButtonLabel;
+
+    [Header("Order Managers (assign ONE)")]
+    public NPCOrderManager npcOrderManager;                 // fallback/legacy
+    public NPCOrderManager_Single npcOrderManagerSingle;    // recommended
+
+    [Header("Behavior")]
+    [Tooltip("If true: hide rows that are already correct. If false: keep visible but locked.")]
+    public bool hideCorrectRows = true;
 
     private List<string> correctValues;
 
+    // Called by NPCOrderManager_Single with the correct answers for this round
     public void PopulateDropdowns(List<string> correct)
     {
         correctValues = correct;
 
-        List<string> fakeValues = new List<string>
+        // Build distractors, avoid collisions only with NON-BLANK answers
+        var nonBlankAnswers = new List<string>();
+        foreach (var v in correctValues)
+            if (!string.IsNullOrEmpty(v)) nonBlankAnswers.Add(v);
+
+        var fakeValues = new List<string>
         {
             Random.Range(1, 61) + "g",
             Random.Range(1, 61) + "ml",
             Random.Range(1, 61) + "oz"
         };
-
         for (int i = 0; i < fakeValues.Count; i++)
         {
-            while (correctValues.Contains(fakeValues[i]))
+            while (nonBlankAnswers.Contains(fakeValues[i]))
             {
                 string unit = fakeValues[i].EndsWith("g") ? "g" :
                               fakeValues[i].EndsWith("ml") ? "ml" : "oz";
@@ -46,42 +65,141 @@ public class OrderTicketUI : MonoBehaviour
             }
         }
 
-        List<string> answerOptions = new List<string>(correctValues);
+        var answerOptions = new List<string>(nonBlankAnswers);
         answerOptions.AddRange(fakeValues);
         ShuffleList(answerOptions);
 
-        List<string> allOptions = new List<string> { "" }; // Option A = blank
-        allOptions.AddRange(answerOptions);
-
-        foreach (var pair in ingredientDropdowns)
-        {
-            pair.dropdown.ClearOptions();
-            pair.dropdown.AddOptions(allOptions);
-            pair.dropdown.value = 0;
-            pair.dropdown.RefreshShownValue();
-        }
-    }
-
-    public void CheckAnswers()
-    {
+        // ✅ Always insert a single blank at index 0 for EVERY row and select it
         for (int i = 0; i < ingredientDropdowns.Count; i++)
         {
-            var selected = ingredientDropdowns[i].dropdown.options[ingredientDropdowns[i].dropdown.value].text;
-            if (selected != correctValues[i])
+            var pair = ingredientDropdowns[i];
+            if (!pair.dropdown) continue;
+
+            var rowOptions = new List<string> { "" };   // single blank, first
+            rowOptions.AddRange(answerOptions);         // then the real options
+
+            pair.dropdown.ClearOptions();
+            pair.dropdown.AddOptions(rowOptions);
+            pair.dropdown.value = 0;                    // start on blank
+            pair.dropdown.RefreshShownValue();
+
+            SetRowVisible(pair, true);
+            SetRowEditable(pair, true);
+        }
+
+        if (incorrectOverlay) incorrectOverlay.SetActive(false);
+    }
+
+    // Hook this to your Submit button
+    public void CheckAnswers()
+    {
+        if (correctValues == null || correctValues.Count == 0)
+        {
+            Debug.LogWarning("OrderTicketUI: correctValues is empty; did NPC populate?");
+            return;
+        }
+
+        var corrections = new List<string>();
+        bool anyIncorrect = false;
+
+        for (int i = 0; i < ingredientDropdowns.Count; i++)
+        {
+            if (i >= correctValues.Count)
             {
-                StartCoroutine(ShowIncorrectOverlay());
-                return;
+                anyIncorrect = true;
+                continue;
+            }
+
+            var pair = ingredientDropdowns[i];
+            if (!pair.dropdown)
+            {
+                anyIncorrect = true;
+                continue;
+            }
+
+            string selected = (pair.dropdown.options.Count > pair.dropdown.value)
+                ? pair.dropdown.options[pair.dropdown.value].text
+                : "";
+
+            string correct = correctValues[i]; // may be "" for omitted items
+            bool isCorrect = (selected == correct);
+
+            if (isCorrect)
+            {
+                if (hideCorrectRows)
+                    SetRowVisible(pair, false);
+                else
+                    SetRowEditable(pair, false);
+            }
+            else
+            {
+                anyIncorrect = true;
+
+                // Keep incorrect visible & editable
+                SetRowVisible(pair, true);
+                SetRowEditable(pair, true);
+
+                if (string.IsNullOrEmpty(correct) && !string.IsNullOrEmpty(selected))
+                {
+                    // Omitted item but player entered something
+                    corrections.Add("I did not ask for that.");
+                }
+                else
+                {
+                    string name = string.IsNullOrEmpty(pair.ingredientName) ? "that" : pair.ingredientName;
+                    corrections.Add($"No, I said {correct} of {name}.");
+                }
             }
         }
 
-        // ✅ Player got everything right
-        npcOrderManager.ShowThanksAndReset();
+        if (!anyIncorrect)
+        {
+            if (npcOrderManagerSingle) npcOrderManagerSingle.ShowThanksAndReset();
+            else if (npcOrderManager)  npcOrderManager.ShowThanksAndReset();
+            else Debug.LogWarning("OrderTicketUI: No order manager assigned to receive success.");
+            return;
+        }
+
+        if (npcOrderManagerSingle)
+        {
+            npcOrderManagerSingle.ShowCorrectionLines(corrections);
+            npcOrderManagerSingle.RegisterWrongAttempt();
+        }
+        else if (npcOrderManager)
+        {
+            Debug.Log("[OrderTicketUI] Incorrect. Consider adding ShowCorrectionLines to legacy manager.");
+        }
     }
 
-    private IEnumerator ShowIncorrectOverlay()
+    public void Retry()
     {
-        incorrectOverlay.SetActive(true);
-        retryButton.interactable = false;
+        if (incorrectOverlay) incorrectOverlay.SetActive(false);
+    }
+
+    private void SetRowVisible(IngredientDropdownPair pair, bool visible)
+    {
+        if (pair.rowRoot) pair.rowRoot.SetActive(visible);
+        else if (pair.dropdown) pair.dropdown.gameObject.SetActive(visible);
+    }
+
+    private void SetRowEditable(IngredientDropdownPair pair, bool editable)
+    {
+        if (pair.rowCanvasGroup)
+        {
+            pair.rowCanvasGroup.alpha = editable ? 1f : 0.4f;
+            pair.rowCanvasGroup.interactable = editable;
+            pair.rowCanvasGroup.blocksRaycasts = editable;
+        }
+        else if (pair.dropdown)
+        {
+            pair.dropdown.interactable = editable;
+        }
+    }
+
+    private IEnumerator ShowIncorrectOverlayCountdown()
+    {
+        if (incorrectOverlay) incorrectOverlay.SetActive(true);
+        if (retryButton) retryButton.interactable = false;
 
         int countdown = 3;
         while (countdown > 0)
@@ -95,13 +213,7 @@ public class OrderTicketUI : MonoBehaviour
         retryButton.interactable = true;
     }
 
-    public void Retry()
-    {
-        incorrectOverlay.SetActive(false);
-        // dropdown values stay the same
-    }
-
-    private void ShuffleList(List<string> list)
+    private void ShuffleList<T>(List<T> list)
     {
         for (int i = 0; i < list.Count; i++)
         {
