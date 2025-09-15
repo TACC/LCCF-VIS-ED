@@ -52,17 +52,22 @@ public class PlateController : MonoBehaviour
             var s = _spots[i];
             if (s == null) continue;
             if (s.Alpha > visibleAlphaThreshold) visible++;
-            if (visible > cleanToleranceSpots) return; // still too dirty
+            if (visible > cleanToleranceSpots) return;
         }
 
         // threshold check
         IsClean = true;
-
-        // clean remaining dirt after threshold
         for (int i = 0; i < _spots.Count; i++)
             if (_spots[i] != null)
                 _spots[i].ForceClean(polishFadeTime);
-
         OnCleaned?.Invoke(this);
+    }
+    
+    public Plane GetBrushPlane()
+    {
+        if (!spawner || !spawner.face)
+            return new Plane(Vector3.back, transform.position);
+
+        return new Plane(spawner.face.forward, spawner.face.position);
     }
 }

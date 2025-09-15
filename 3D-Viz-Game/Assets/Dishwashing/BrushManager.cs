@@ -5,11 +5,14 @@ using ETouch = UnityEngine.InputSystem.EnhancedTouch;
 
 public class BrushManager : MonoBehaviour
 {
+    public bool inputEnabled = true;
+
     [Header("Scene")]
     public Camera cam;
     public LayerMask plateLayer;
-    public float surfaceOffset = 0.002f;
+    public float surfaceOffset = 0.001f;
     public float rayMaxDistance = 5f;
+
 
     [Header("Brush")]
     // small visual to see where we are pointing, will change to small sponge later maybe?
@@ -46,12 +49,29 @@ public class BrushManager : MonoBehaviour
 
     void Update()
     {
+        if (!inputEnabled)
+        {
+            // prevent scrubbing and also clear existing brushes so DirtSpot sees none
+            if (_brushes.Count > 0)
+            {
+                foreach (var kv in _brushes) if (kv.Value) Destroy(kv.Value.gameObject);
+                _brushes.Clear();
+            }
+            return;
+        }
         if (Mouse.current != null)
         {
             Vector2 mpos = Mouse.current.position.ReadValue();
             bool mpressed = Mouse.current.leftButton.isPressed;
             var b = GetOrCreate(MouseId);
-            b.UpdateFromPointer(cam, plateLayer, surfaceOffset, rayMaxDistance, mpos, mpressed);
+            Ray ray = cam.ScreenPointToRay(mpos);
+
+            if (Physics.Raycast(ray, out var hit, rayMaxDistance, plateLayer))
+            {
+                var plate = hit.collider.GetComponentInParent<PlateController>();
+                if (plate != null)
+                    b.UpdateFromPointer(cam, plate, surfaceOffset, mpos, mpressed);
+            }
         }
 
         // track all active touches
@@ -67,7 +87,14 @@ public class BrushManager : MonoBehaviour
                         || t.phase == UnityEngine.InputSystem.TouchPhase.Stationary;
 
             var b = GetOrCreate(id);
-            b.UpdateFromPointer(cam, plateLayer, surfaceOffset, rayMaxDistance, t.screenPosition, pressed);
+            Ray ray = cam.ScreenPointToRay(t.screenPosition);
+
+            if (Physics.Raycast(ray, out var hit, rayMaxDistance, plateLayer))
+            {
+                var plate = hit.collider.GetComponentInParent<PlateController>();
+                if (plate != null)
+                    b.UpdateFromPointer(cam, plate, surfaceOffset, t.screenPosition, pressed);
+            }
         }
 
         var toRemove = ListPool<int>.Get();

@@ -7,6 +7,9 @@ public class DishlineController : MonoBehaviour
     [Header("Prefab")]
     public PlateController platePrefab;
 
+    [Header("Flow")]
+    public bool autoStart = false;
+
     [Header("Left: Dirty rack/queue")]
     // where dirty dishes go in the rack
     public Transform dirtyAnchor;
@@ -37,6 +40,19 @@ public class DishlineController : MonoBehaviour
     public AnimationCurve ease = null;
     public float arcHeight = 0.12f;
 
+    public event System.Action<PlateController> OnPlateStacked;  // notify when plate is stacked on the right
+    public int CleanCount => cleanCount;
+
+    public void StartSpawning()
+    {
+        if (generatorCo == null) generatorCo = StartCoroutine(DirtyGenerator());
+    }
+
+    public void StopSpawning()
+    {
+        if (generatorCo != null) { StopCoroutine(generatorCo); generatorCo = null; }
+    }
+
     Coroutine generatorCo;
 
     void OnValidate()
@@ -54,7 +70,8 @@ public class DishlineController : MonoBehaviour
         if (!cleanAnchor) { Debug.LogError("[Dishline] Clean Anchor not assigned."); return; }
         for (int i = 0; i < 3; i++) if (!workSlots[i]) { Debug.LogError($"[Dishline] WorkSlot_{i} not assigned."); return; }
 
-        generatorCo = StartCoroutine(DirtyGenerator());
+        if (autoStart)
+            generatorCo = StartCoroutine(DirtyGenerator());
     }
 
     void Update()
@@ -109,7 +126,7 @@ public class DishlineController : MonoBehaviour
         var next = dirtyQueue.Peek();
         if (next.plate == null) { dirtyQueue.Dequeue(); return; }
 
-        // enforce dwell time so it appears in the rack briefly first
+        // enforce dwell time so it appears in the rack first
         if (Time.time - next.timeIn < minRackDwellSeconds) return;
 
         dirtyQueue.Dequeue();
@@ -119,6 +136,8 @@ public class DishlineController : MonoBehaviour
             workSlots[freeSlot].position, workSlots[freeSlot].rotation,
             toWorkDuration, ease, arcHeight, true));
 
+        var fx = next.plate.GetComponent<PlateFX>() ?? next.plate.gameObject.AddComponent<PlateFX>();
+        fx.ScaleTo(1.4f, 0.25f);
         active[freeSlot] = next.plate;
     }
 
@@ -129,7 +148,7 @@ public class DishlineController : MonoBehaviour
             if (active[i] == plate) { slot = i; break; }
         if (slot == -1) return;
 
-        // compute next clean stack position
+        // get next clean stack position
         Vector3 offset = cleanAnchor.TransformVector(cleanSpacingLocal) * cleanCount;
         Vector3 cleanPos = cleanAnchor.position + offset;
 
@@ -138,7 +157,9 @@ public class DishlineController : MonoBehaviour
 
     IEnumerator MoveToCleanAndFreeSlot(PlateController plate, int slot, Vector3 cleanPos)
     {
-        // move & rotate to flat clean stack
+        var fx = plate.GetComponent<PlateFX>() ?? plate.gameObject.AddComponent<PlateFX>();
+        fx.ResetScale(0.12f);
+
         var tmp = new GameObject("CleanTarget").transform;
         tmp.position = cleanPos;
         tmp.rotation = cleanAnchor.rotation;
@@ -158,31 +179,9 @@ public class DishlineController : MonoBehaviour
 
         // free the slot
         active[slot] = null;
+        OnPlateStacked?.Invoke(plate);
     }
 
-    // temporary
-    void OnDrawGizmos()
-    {
-        if (dirtyAnchor)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireCube(dirtyAnchor.position, Vector3.one * 0.06f);
-            // draw 5 stack markers
-            for (int i = 0; i < 5; i++)
-            {
-                Vector3 o = dirtyAnchor.TransformVector(dirtySpacingLocal) * i;
-                Gizmos.DrawWireCube(dirtyAnchor.position + o, Vector3.one * 0.04f);
-            }
-        }
-        if (cleanAnchor)
-        {
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireCube(cleanAnchor.position, Vector3.one * 0.06f);
-        }
-        if (workSlots != null)
-        {
-            Gizmos.color = Color.cyan;
-            foreach (var t in workSlots) if (t) Gizmos.DrawWireCube(t.position, Vector3.one * 0.06f);
-        }
-    }
+
+
 }

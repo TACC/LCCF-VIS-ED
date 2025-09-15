@@ -4,7 +4,7 @@ using UnityEngine;
 public class DirtSpot : MonoBehaviour
 {
     public float fadeSpeed = 3f;
-    public float radius = 0.12f;
+    public float radius = 0.2f;
     public float Alpha => _alpha;
 
     Material _mat;
