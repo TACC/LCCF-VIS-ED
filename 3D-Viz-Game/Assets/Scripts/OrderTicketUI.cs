@@ -204,13 +204,13 @@ public class OrderTicketUI : MonoBehaviour
         int countdown = 3;
         while (countdown > 0)
         {
-            retryButtonLabel.text = $"Retry ({countdown})";
+            if (retryButtonLabel) retryButtonLabel.text = $"Retry ({countdown})";
             yield return new WaitForSeconds(1f);
             countdown--;
         }
 
-        retryButtonLabel.text = "Retry";
-        retryButton.interactable = true;
+        if (retryButtonLabel) retryButtonLabel.text = "Retry";
+        if (retryButton) retryButton.interactable = true;
     }
 
     private void ShuffleList<T>(List<T> list)
