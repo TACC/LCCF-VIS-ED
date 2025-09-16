@@ -2,40 +2,44 @@ using UnityEngine;
 using System.Collections;
 using TMPro;
 
+[RequireComponent(typeof(Collider))]
+[RequireComponent(typeof(SortableItem3D))]
 public class DragHandler3D : MonoBehaviour
 {
+    public enum DragMode { BurgerBuild, Sorting }
+    public DragMode mode = DragMode.BurgerBuild;
+
     private Camera mainCam;
     private Vector3 offset;
     private bool dragging = false;
-    private float fixedZ;
+    private float fixedAxis;
 
     [SerializeField] private Transform spawnPoint;
-    [SerializeField] private BurgerStackManager stackManager;
+    [SerializeField] private BurgerStackManager stackManager; // used only in BurgerBuild
 
+    private Quaternion originalRotation;
+
+    // BurgerBuild only
     private bool isOverDropZone = false;
+    private Transform currentDropTarget;
 
     public bool IsInStack { get; private set; } = false;
-
-    public void MarkInStack(bool value)
-    {
-        IsInStack = value;
-        gameObject.tag = value ? "InStack" : "InSpawn";
-    }
+    public int ingredientValue;
 
     void Start()
     {
         mainCam = Camera.main;
-        fixedZ = transform.position.z;
+        originalRotation = transform.rotation;
 
-        if (spawnPoint == null)
+        if (mode == DragMode.BurgerBuild)
         {
-            spawnPoint = new GameObject(name + "_Spawn").transform;
-            spawnPoint.position = transform.position;
+            fixedAxis = transform.position.z;
+            if (stackManager == null)
+                stackManager = FindAnyObjectByType<BurgerStackManager>();
         }
-
-        if (stackManager == null)
+        else // Sorting
         {
-            stackManager = FindAnyObjectByType<BurgerStackManager>();
+            fixedAxis = (spawnPoint != null) ? spawnPoint.position.z : 1.68f;
         }
     }
 
@@ -49,49 +53,79 @@ public class DragHandler3D : MonoBehaviour
     {
         dragging = false;
 
-        if (!isOverDropZone)
+        if (mode == DragMode.Sorting)
         {
-            ResetToSpawnPoint();
+            var mgr = ConveyorManager3D.Instance;
+            var item = GetComponent<SortableItem3D>();
+            bool inZone = (mgr && mgr.IsInConveyorZone(transform.position));
+            Debug.Log($"[DragHandler3D] Sorting release | mgr={(mgr? "OK":"NULL")} item={(item? "OK":"MISSING")} inZone={inZone} pos={transform.position}");
+
+            if (inZone && item != null)
+            {
+                bool placed = mgr.TryPlace(item);
+                if (!placed) ResetToSpawnPoint();
+            }
+            else
+            {
+                ResetToSpawnPoint();
+            }
+            return;
+        }
+
+        // --- BurgerBuild path (unchanged) ---
+        if (isOverDropZone && stackManager != null)
+        {
+            stackManager.StackItem(gameObject);
         }
         else
         {
-            stackManager?.StackItem(gameObject);
+            ResetToSpawnPoint();
         }
     }
 
     void Update()
     {
-        if (dragging)
+        if (!dragging) return;
+
+        Vector3 newPos = GetMouseWorldPosition() + offset;
+
+        if (mode == DragMode.BurgerBuild)
         {
-            Vector3 newPos = GetMouseWorldPosition() + offset;
-            newPos.x = Mathf.Clamp(newPos.x, -3f, 3f);
+            newPos.x = Mathf.Clamp(newPos.x, -3.3f, 3.3f);
             newPos.y = Mathf.Clamp(newPos.y, 0.5f, 2.5f);
-            newPos.z = fixedZ;
-            transform.position = newPos;
+            newPos.z = fixedAxis;
         }
+        else // Sorting
+        {
+            newPos.x = Mathf.Clamp(newPos.x, -3f, 3f);
+            newPos.y = Mathf.Clamp(newPos.y, -1.0f, 2.8f);
+            newPos.z = fixedAxis;
+        }
+
+        transform.position = newPos;
     }
 
     Vector3 GetMouseWorldPosition()
     {
-        Vector3 mouse = Input.mousePosition;
-        mouse.z = Mathf.Abs(mainCam.transform.position.z - fixedZ);
-        return mainCam.ScreenToWorldPoint(mouse);
+        Ray ray = mainCam.ScreenPointToRay(Input.mousePosition);
+        Plane dragPlane = new Plane(Vector3.forward, new Vector3(0, 0, fixedAxis));
+        return dragPlane.Raycast(ray, out float enter) ? ray.GetPoint(enter) : transform.position;
     }
 
     public void ResetToSpawnPoint()
-{
-    stackManager?.RemoveFromStack(gameObject);
-    StartCoroutine(AnimateReturn(spawnPoint.position, spawnPoint.rotation));
-    MarkInStack(false);
-
-    // ✅ Show number again
-    TextMeshProUGUI label = GetComponentInChildren<TextMeshProUGUI>();
-    if (label != null)
     {
-        label.enabled = true;
-    }
-}
+        if (mode == DragMode.BurgerBuild)
+        {
+            stackManager?.RemoveFromStack(gameObject);
+            MarkInStack(false);
+        }
 
+        if (spawnPoint != null)
+            StartCoroutine(AnimateReturn(spawnPoint.position, originalRotation));
+
+        TextMeshProUGUI label = GetComponentInChildren<TextMeshProUGUI>();
+        if (label != null) label.enabled = true;
+    }
 
     private IEnumerator AnimateReturn(Vector3 targetPos, Quaternion targetRot)
     {
@@ -116,21 +150,39 @@ public class DragHandler3D : MonoBehaviour
     public void SetSpawnPoint(Transform point)
     {
         spawnPoint = point;
+        if (mode == DragMode.Sorting)
+        {
+            fixedAxis = point.position.z;
+            originalRotation = transform.rotation;
+        }
     }
 
+    public void MarkInStack(bool value)
+    {
+        IsInStack = value;
+        gameObject.tag = value ? "InStack" : "InSpawn";
+    }
+
+    // ---- Trigger hooks now apply to BurgerBuild only ----
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("DropZone"))
+        if (mode != DragMode.BurgerBuild) return;
+
+        if (other.CompareTag("DropZone") || other.GetComponent<DropTarget>())
         {
             isOverDropZone = true;
+            currentDropTarget = other.transform;
         }
     }
 
     void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("DropZone"))
+        if (mode != DragMode.BurgerBuild) return;
+
+        if (other.CompareTag("DropZone") || other.GetComponent<DropTarget>())
         {
             isOverDropZone = false;
+            currentDropTarget = null;
         }
     }
 }

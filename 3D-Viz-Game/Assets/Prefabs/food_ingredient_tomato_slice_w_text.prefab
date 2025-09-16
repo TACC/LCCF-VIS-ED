@@ -114,6 +114,7 @@ GameObject:
   - component: {fileID: 2169718624101580628}
   - component: {fileID: 8239993754006424332}
   - component: {fileID: -7088463044820874130}
+  - component: {fileID: 6070522290025333816}
   - component: {fileID: -1835621918182405986}
   - component: {fileID: 4249892249579083441}
   m_Layer: 0
@@ -204,8 +205,56 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e11d3ace7114dc040bf16367d9758706, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mode: 0
   spawnPoint: {fileID: 0}
   stackManager: {fileID: 0}
+  ingredientValue: 0
+--- !u!114 &6070522290025333816
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6348792232201518606}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e91dbb8ff3eac745a251bba72604910, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  value: 0
+  home: {fileID: 0}
+  valueText: {fileID: 9059497698987923788}
+  labelFormat: '{0}'
+  autoFindLabel: 1
+  initFromLabel: 1
+  initFromDragHandler: 1
+  moveDuration: 0.25
+  moveCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  slotIndex: -1
+  debugLogs: 1
 --- !u!65 &-1835621918182405986
 BoxCollider:
   m_ObjectHideFlags: 0
