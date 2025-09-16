@@ -42,3 +42,9 @@ sysinfo.txt
 # Crashlytics generated file
 Assets/StreamingAssets/crashlytics-build.properties
 
+# Block VS/Rider/MSBuild problems
+Assets/**/obj/
+Assets/**/bin/
+*.g.cs
+BrushDebugHUD.*
+
