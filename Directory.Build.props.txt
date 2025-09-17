@@ -1,0 +1,7 @@
+<Project>
+  <ItemGroup>
+    <!-- Prevent compilation of BrushDebugHUD and all .g.cs files -->
+    <Compile Remove="**/BrushDebugHUD.*" />
+    <Compile Remove="**/*.g.cs" />
+  </ItemGroup>
+</Project>
