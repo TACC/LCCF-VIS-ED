@@ -11,6 +11,7 @@ public class PlayerRoleManager : NetworkBehaviour
     public Camera playerCam;
 
     // this runs every time a player is spawned in multiplayer
+
     public override void OnStartClient()
     {
         base.OnStartClient();
@@ -24,9 +25,10 @@ public class PlayerRoleManager : NetworkBehaviour
 
         // if im just a client
         playerCam.enabled = false;
-        //Debug.Log("Client waiting for role selection.");
+        Debug.Log("Client waiting for role selection.");
 
     }
+
 
 
     [ObserversRpc]
@@ -34,37 +36,39 @@ public class PlayerRoleManager : NetworkBehaviour
     {
         ApplyRole(role);
     }
+    
 
-    private void ApplyRole(string assignedRole)
+private void ApplyRole(string assignedRole)
+{
+    if (!IsOwner) return;
+
+    string[] allRoles = { "Cashier", "Kitchen", "Stocker", "Dishwasher" };
+
+    foreach (string role in allRoles)
     {
-        if (!IsOwner)
-            return;
-        //Debug.Log($"[Client {base.Owner.ClientId}] Applying role: {assignedRole}");
+        GameObject roleGO = GameObject.Find($"{role}Cam");
 
-        //finds the cam in the hierarchy, and then enables it for the client
-        Camera roleCam = GameObject.Find($"{assignedRole}Cam")?.GetComponent<Camera>();
-        if (roleCam != null)
+        if (roleGO != null)
         {
-            playerCam.enabled = false; //disable the prefab's built-in cam
-            roleCam.enabled = true;
+            bool shouldEnable = role == assignedRole;
+            roleGO.SetActive(shouldEnable);
 
-            Canvas canvas = roleCam.GetComponentInChildren<Canvas>(true);
-            if (canvas != null)
-            {
-                canvas.gameObject.SetActive(true);
-                canvas.worldCamera = roleCam;
-            }
+            Debug.Log($"{(shouldEnable ? "Enabled" : "Disabled")} {roleGO.name}");
         }
-
-        //disable role select background
-        GameObject bgCanvas = GameObject.Find("RoleSelectionUI-background");
-        if (bgCanvas != null)
+        else
         {
-            bgCanvas.SetActive(false);
+            Debug.LogWarning($"Could not find: {role}Cam");
         }
-        //Debug.Log($"[Client {base.Owner.ClientId}] Spawned as {assignedRole}");
-
     }
+
+    // Hide the selection background
+    GameObject bgCanvas = GameObject.Find("RoleSelectionUI-background");
+    if (bgCanvas != null)
+        bgCanvas.SetActive(false);
+}
+
+
+
 
     //method runs on the server but is called by clients
     [ServerRpc]
