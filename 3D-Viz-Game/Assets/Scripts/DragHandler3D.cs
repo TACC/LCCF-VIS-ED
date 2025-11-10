@@ -18,22 +18,23 @@ public class DragHandler3D : MonoBehaviour
     public DepthMode depthMode = DepthMode.SurfacePlane;
 
     [Header("References")]
-    [SerializeField] private Camera dragCamera;
-    [SerializeField] private Transform dragSurface;
+    [SerializeField] private Camera dragCamera;                 // resolved via tag or injected
+    [SerializeField] private string dragCameraTag = "dragCamera";
+    [SerializeField] private Transform dragSurface;             // for SurfacePlane mode
     [SerializeField] private Vector3 surfaceNormalLocal = Vector3.up;
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private BurgerStackManager stackManager;
 
     [Header("Clamps (optional, world X/Y)")]
-    public bool useClamps = false;
+    public bool useClamps = true;
     public Vector2 sortingClampX = new Vector2(-3f, 3f);
     public Vector2 sortingClampY = new Vector2(-1f, 2.8f);
     public Vector2 burgerClampX  = new Vector2(-3.3f, 3.3f);
     public Vector2 burgerClampY  = new Vector2(0.5f, 2.5f);
 
     [Header("Physics")]
-    public bool keepKinematicAlways = true;
-    public bool freezeRotation = true;
+    public bool keepKinematicAlways = true;     // keeps RB kinematic while dragging/returning
+    public bool freezeRotation = true;          // adds FreezeRotation to RB constraints if present
 
     [Header("Diagnostics")]
     public bool logDebug = false;
@@ -53,6 +54,7 @@ public class DragHandler3D : MonoBehaviour
     private bool isOverDropZone;
     private Transform currentDropTarget;
 
+    // Optional value mirror
     [SerializeField] private int ingredientValueBacking;
     public int ingredientValue
     {
@@ -62,12 +64,17 @@ public class DragHandler3D : MonoBehaviour
 
     public bool IsInStack { get; private set; } = false;
 
+    // ---------------- lifecycle ----------------
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         sortable = GetComponent<SortableItem3D>();
         originalRotation = transform.rotation;
         initialLocalScale = transform.localScale;
+
+        // Resolve camera: explicit > tagged > MainCamera
+        if (!dragCamera) dragCamera = FindTaggedCamera();
+        if (!dragCamera) dragCamera = Camera.main;
 
         if (rb)
         {
@@ -88,6 +95,37 @@ public class DragHandler3D : MonoBehaviour
         }
     }
 
+    // ---------------- camera helpers ----------------
+    public void SetDragCamera(Camera cam) => dragCamera = cam;
+
+    private Camera FindTaggedCamera()
+    {
+        if (string.IsNullOrEmpty(dragCameraTag)) return null;
+        var tagged = GameObject.FindGameObjectsWithTag(dragCameraTag);
+        // prefer active+enabled cameras
+        foreach (var go in tagged)
+        {
+            var cam = go.GetComponent<Camera>();
+            if (cam != null && cam.enabled && go.activeInHierarchy) return cam;
+        }
+        // fallback: any camera on tagged objects
+        foreach (var go in tagged)
+        {
+            var cam = go.GetComponent<Camera>();
+            if (cam != null) return cam;
+        }
+        return null;
+    }
+
+    private Camera Cam()
+    {
+        if (dragCamera && dragCamera.enabled && dragCamera.gameObject.activeInHierarchy) return dragCamera;
+        var tagged = FindTaggedCamera();
+        if (tagged) { dragCamera = tagged; return dragCamera; }
+        return Camera.main;
+    }
+
+    // ---------------- input helpers ----------------
     private static Vector2 PointerPos()
     {
 #if ENABLE_INPUT_SYSTEM
@@ -99,14 +137,13 @@ public class DragHandler3D : MonoBehaviour
 #endif
     }
 
-    private Camera Cam() => dragCamera ? dragCamera : Camera.main;
-
+    // ---------------- mouse (explicit raycasts) ----------------
     void OnMouseDown()
     {
         var cam = Cam();
         if (!cam)
         {
-            Debug.LogError("DragHandler3D: No camera assigned and no MainCamera tagged.", this);
+            Debug.LogError("DragHandler3D: No camera found (tagged, assigned, or MainCamera).", this);
             return;
         }
 
@@ -116,27 +153,30 @@ public class DragHandler3D : MonoBehaviour
         if (!Physics.Raycast(ray, out var hit, 1000f, ~0, QueryTriggerInteraction.Collide)) return;
         if (hit.collider.gameObject != gameObject) return;
 
-        if (depthMode == DepthMode.SurfacePlane)
+        // Build drag plane at hit depth/orientation
+        switch (depthMode)
         {
-            Vector3 n = dragSurface
-                ? dragSurface.TransformDirection(surfaceNormalLocal).normalized
-                : -cam.transform.forward;
-            dragPlane = new Plane(n, hit.point);
-        }
-        else if (depthMode == DepthMode.CameraPlane)
-        {
-            dragPlane = new Plane(-cam.transform.forward, hit.point);
-        }
-        else
-        {
-            worldZ = transform.position.z;
-            dragPlane = new Plane(Vector3.forward, new Vector3(0, 0, worldZ));
+            case DepthMode.SurfacePlane:
+            {
+                Vector3 n = dragSurface
+                    ? dragSurface.TransformDirection(surfaceNormalLocal).normalized
+                    : -cam.transform.forward; // screen-aligned plane through hit
+                dragPlane = new Plane(n, hit.point);
+                break;
+            }
+            case DepthMode.CameraPlane:
+                dragPlane = new Plane(-cam.transform.forward, hit.point);
+                break;
+            case DepthMode.WorldZ:
+                worldZ = transform.position.z;
+                dragPlane = new Plane(Vector3.forward, new Vector3(0, 0, worldZ));
+                break;
         }
 
         grabOffset = transform.position - hit.point;
         dragging = true;
 
-        // stop physics BEFORE making kinematic (prevents warnings)
+        // quiet physics
         if (rb && !keepKinematicAlways)
         {
 #if UNITY_6000_0_OR_NEWER
@@ -205,7 +245,7 @@ public class DragHandler3D : MonoBehaviour
         }
     }
 
-    // -------- Utilities --------
+    // ---------------- utilities ----------------
     public void ResetToSpawnPoint()
     {
         if (mode == DragMode.BurgerBuild)
@@ -227,16 +267,13 @@ public class DragHandler3D : MonoBehaviour
         if (label) label.enabled = true;
     }
 
-    // Smooth glide back to spawn (animate in world space first, THEN parent)
     private IEnumerator ReturnToSpawnRoutine()
     {
-        // 0) Cache world start/end BEFORE any parenting
         Vector3 startPos = transform.position;
         Quaternion startRot = transform.rotation;
         Vector3 endPos = spawnPoint.position;
         Quaternion endRot = (mode == DragMode.Sorting) ? startRot : spawnPoint.rotation;
 
-        // 1) Silence physics
         if (rb)
         {
 #if UNITY_6000_0_OR_NEWER
@@ -248,40 +285,29 @@ public class DragHandler3D : MonoBehaviour
             rb.isKinematic = true;
         }
 
-        // 2) Disable colliders during glide
         var cols = GetComponentsInChildren<Collider>(includeInactive: true);
         for (int i = 0; i < cols.Length; i++) cols[i].enabled = false;
 
-        // 3) Animate in world space (no parenting yet)
-        float dur = 0.25f; // matches your stack-in feel
+        float dur = 0.25f;
         float t = 0f;
         while (t < dur)
         {
             t += Time.deltaTime;
             float a = t / dur;
-
-            Vector3 p = Vector3.Lerp(startPos, endPos, a);
-            // Use transform for reliable world-space interpolation
-            transform.position = p;
-
+            transform.position = Vector3.Lerp(startPos, endPos, a);
             if (mode != DragMode.Sorting)
                 transform.rotation = Quaternion.Slerp(startRot, endRot, a);
-
             yield return null;
         }
 
         transform.position = endPos;
         transform.rotation = endRot;
 
-        // 4) Now parent under spawn while keeping the world pose
         transform.SetParent(spawnPoint, worldPositionStays: true);
         transform.localScale = initialLocalScale;
-
-        // (Optional tidy) ensure locals are clean; this won't visually change if we are exactly at 'endPos'
         transform.localPosition = Vector3.zero;
         if (mode == DragMode.BurgerBuild) transform.localRotation = Quaternion.identity;
 
-        // 5) Re-enable colliders next frame
         yield return null;
         for (int i = 0; i < cols.Length; i++) if (cols[i]) cols[i].enabled = true;
 
@@ -291,8 +317,14 @@ public class DragHandler3D : MonoBehaviour
     public void SetSpawnPoint(Transform point)
     {
         spawnPoint = point;
-        originalRotation   = transform.rotation;
-        initialLocalScale  = transform.localScale;
+        originalRotation  = transform.rotation;
+        initialLocalScale = transform.localScale;
+    }
+
+    public void SetDragSurface(Transform surface, Vector3 localNormalUp)
+    {
+        dragSurface = surface;
+        surfaceNormalLocal = localNormalUp;
     }
 
     public void MarkInStack(bool value)
@@ -301,7 +333,7 @@ public class DragHandler3D : MonoBehaviour
         gameObject.tag = value ? "InStack" : "InSpawn";
     }
 
-    // Burger triggers
+    // ---------------- burger triggers ----------------
     void OnTriggerEnter(Collider other)
     {
         if (mode != DragMode.BurgerBuild) return;
