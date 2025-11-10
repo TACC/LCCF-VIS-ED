@@ -16,7 +16,6 @@ public class RoleSelectionUI : MonoBehaviour
 
     void Start()
     {
-        stationText.text = "Choose your Restaurant role";
         StartCoroutine(WaitForClientIdAndHideIfHost());
     }
 
