@@ -52,7 +52,7 @@ public class NetworkGameManager : NetworkBehaviour
         UpdateWaitingUI();
         Debug.Log($"{readyPlayers.Value}/4 players ready");
 
-        if (readyPlayers.Value == 1)
+        if (readyPlayers.Value == 2)
         {
             Debug.Log("[NetworkGameManager] 4 players ready. Starting role selection...");
             ShowRoleSelectionUI();

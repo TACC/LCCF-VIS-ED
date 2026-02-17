@@ -29,10 +29,9 @@ public class MainMenuUI : MonoBehaviour
             Debug.LogError("NetworkManager not found.");
             return;
         }
-
-        networkManager.ClientManager.StartConnection();
-
+        networkManager.ClientManager.OnClientConnectionState -= OnClientConnected;
         networkManager.ClientManager.OnClientConnectionState += OnClientConnected;
+        networkManager.ClientManager.StartConnection();
     }
 
     private void OnClientConnected(ClientConnectionStateArgs args)
@@ -45,8 +44,7 @@ public class MainMenuUI : MonoBehaviour
             // Show waiting room UI
             mainMenuPanel.SetActive(false);
             waitingPanel.SetActive(true);
-            // Count this player as 'ready'
-            StartCoroutine(WaitThenSendReadySignal());
+            networkManager.StartCoroutine(WaitThenSendReadySignal());
         }
     }
 
@@ -78,13 +76,29 @@ public class MainMenuUI : MonoBehaviour
         }
 
         Debug.Log("[MainMenuUI] Found local player. Sending ready signal to server.");
-        localPlayer.MarkPlayerReadyServerRpc();
+        // Wait until the relay exists and is spawned, then notify ready.
+        while (ClientReadyRelay.Instance == null || !ClientReadyRelay.Instance.IsSpawned)
+            yield return null;
+
+        ClientReadyRelay.Instance.NotifyReadyServerRpc();
     }
 
 
     public void OnWaitingScreenStartButtonPressed()
     {
-        StartCoroutine(WaitThenSendReadySignal());
+        networkManager.StartCoroutine(WaitThenSendReadySignal());
+    }
+
+    private void OnDisable()
+    {
+        if (networkManager != null)
+            networkManager.ClientManager.OnClientConnectionState -= OnClientConnected;
+    }
+
+    private void OnDestroy()
+    {
+        if (networkManager != null)
+            networkManager.ClientManager.OnClientConnectionState -= OnClientConnected;
     }
 
 }
