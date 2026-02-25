@@ -8,28 +8,23 @@ namespace FishNet.Component.Prediction
     [UseGlobalCustomSerializer]
     [Preserve]
     public struct RigidbodyState
-    {        
+    {
         public Vector3 Position;
         public Quaternion Rotation;
+        [ExcludeSerialization]
+        public readonly AutoPackType RotationPacking;
         public bool IsKinematic;
         public Vector3 Velocity;
         public Vector3 AngularVelocity;
-
-        public RigidbodyState(Rigidbody rb, bool isKinematic) : this(rb)
-        {
-            Position = rb.transform.position;
-            Rotation = rb.transform.rotation;
-            IsKinematic = isKinematic;
-            Velocity = rb.linearVelocity;
-            AngularVelocity = rb.angularVelocity;
-        }
-        public RigidbodyState(Rigidbody rb)
+        
+        public RigidbodyState(Rigidbody rb, AutoPackType rotationPacking = AutoPackType.Packed)
         {
             Position = rb.transform.position;
             Rotation = rb.transform.rotation;
             IsKinematic = rb.isKinematic;
             Velocity = rb.linearVelocity;
             AngularVelocity = rb.angularVelocity;
+            RotationPacking = rotationPacking;
         }
     }
 
@@ -39,25 +34,18 @@ namespace FishNet.Component.Prediction
     {
         public Vector3 Position;
         public Quaternion Rotation;
+        [ExcludeSerialization]
+        public readonly AutoPackType RotationPacking;
         public Vector2 Velocity;
         public float AngularVelocity;
         public bool Simulated;
         public bool IsKinematic;
-
-        public Rigidbody2DState(Rigidbody2D rb, bool simulated)
+        
+        public Rigidbody2DState(Rigidbody2D rb, AutoPackType rotationPacking = AutoPackType.Packed)
         {
             Position = rb.transform.position;
             Rotation = rb.transform.rotation;
-            Velocity = rb.linearVelocity;
-            AngularVelocity = rb.angularVelocity;
-            Simulated = simulated;
-            IsKinematic = rb.isKinematic;
-        }
-
-        public Rigidbody2DState(Rigidbody2D rb)
-        {
-            Position = rb.transform.position;
-            Rotation = rb.transform.rotation;
+            RotationPacking = rotationPacking;
             Velocity = rb.linearVelocity;
             AngularVelocity = rb.angularVelocity;
             Simulated = rb.simulated;
@@ -71,8 +59,12 @@ namespace FishNet.Component.Prediction
         public static void WriteRigidbodyState(this Writer writer, RigidbodyState value)
         {
             writer.WriteVector3(value.Position);
-            writer.WriteQuaternion32(value.Rotation);
+            
+            writer.WriteAutoPackType(value.RotationPacking);
+            writer.WriteQuaternion(value.Rotation, value.RotationPacking);
+            
             writer.WriteBoolean(value.IsKinematic);
+            
             if (!value.IsKinematic)
             {
                 writer.WriteVector3(value.Velocity);
@@ -82,13 +74,20 @@ namespace FishNet.Component.Prediction
 
         public static RigidbodyState ReadRigidbodyState(this Reader reader)
         {
+            Vector3 position = reader.ReadVector3();
+
+            AutoPackType rotationPacking = reader.ReadAutoPackType();
+            Quaternion rotation = reader.ReadQuaternion(rotationPacking);
+
+            bool isKinematic = reader.ReadBoolean();
+
             RigidbodyState state = new()
             {
-                Position = reader.ReadVector3(),
-                Rotation = reader.ReadQuaternion32(),
-                IsKinematic = reader.ReadBoolean()
+                Position = position,
+                Rotation = rotation,
+                IsKinematic = isKinematic,
             };
-
+                
             if (!state.IsKinematic)
             {
                 state.Velocity = reader.ReadVector3();
@@ -101,7 +100,10 @@ namespace FishNet.Component.Prediction
         public static void WriteRigidbody2DState(this Writer writer, Rigidbody2DState value)
         {
             writer.WriteVector3(value.Position);
-            writer.WriteQuaternion32(value.Rotation);
+            
+            writer.WriteAutoPackType(value.RotationPacking);
+            writer.WriteQuaternion(value.Rotation, value.RotationPacking);
+            
             writer.WriteBoolean(value.Simulated);
             writer.WriteBoolean(value.IsKinematic);
 
@@ -114,12 +116,20 @@ namespace FishNet.Component.Prediction
 
         public static Rigidbody2DState ReadRigidbody2DState(this Reader reader)
         {
+            Vector3 position = reader.ReadVector3();
+            
+            AutoPackType rotationPacking = reader.ReadAutoPackType();
+            Quaternion rotation = reader.ReadQuaternion(rotationPacking);
+            
+            bool simulated = reader.ReadBoolean();
+            bool isKinematic = reader.ReadBoolean();
+            
             Rigidbody2DState state = new()
             {
-                Position = reader.ReadVector3(),
-                Rotation = reader.ReadQuaternion32(),
-                Simulated = reader.ReadBoolean(),
-                IsKinematic = reader.ReadBoolean()
+                Position = position,
+                Rotation = rotation,
+                Simulated = simulated,
+                IsKinematic = isKinematic,
             };
 
             if (state.Simulated)
@@ -130,8 +140,6 @@ namespace FishNet.Component.Prediction
 
             return state;
         }
-
-
     }
 
     [Preserve]
@@ -140,10 +148,11 @@ namespace FishNet.Component.Prediction
         /// <summary>
         /// Gets a RigidbodyState.
         /// </summary>
-        public static RigidbodyState GetState(this Rigidbody rb)
+        public static RigidbodyState GetState(this Rigidbody rb, AutoPackType rotationPacking = AutoPackType.Packed)
         {
-            return new(rb);
+            return new(rb, rotationPacking);
         }
+
         /// <summary>
         /// Sets a state to a rigidbody.
         /// </summary>
@@ -152,17 +161,24 @@ namespace FishNet.Component.Prediction
             Transform t = rb.transform;
             t.position = state.Position;
             t.rotation = state.Rotation;
-            rb.linearVelocity = state.Velocity;
-            rb.angularVelocity = state.AngularVelocity;
+            rb.isKinematic = state.IsKinematic;
+   
+            if (!state.IsKinematic)
+            {
+                rb.linearVelocity = state.Velocity;
+                rb.angularVelocity = state.AngularVelocity;
+            }
         }
+
 
         /// <summary>
         /// Gets a Rigidbody2DState.
         /// </summary>
-        public static Rigidbody2DState GetState(this Rigidbody2D rb)
+        public static Rigidbody2DState GetState(this Rigidbody2D rb, AutoPackType rotationPacking = AutoPackType.Packed)
         {
-            return new(rb);
+            return new(rb, rotationPacking);
         }
+
         /// <summary>
         /// Sets a state to a rigidbody.
         /// </summary>
@@ -171,9 +187,13 @@ namespace FishNet.Component.Prediction
             Transform t = rb.transform;
             t.position = state.Position;
             t.rotation = state.Rotation;
-            rb.linearVelocity = state.Velocity;
-            rb.angularVelocity = state.AngularVelocity;
-        }
+            rb.isKinematic = state.IsKinematic;
 
+            if (!state.IsKinematic)
+            {
+                rb.linearVelocity = state.Velocity;
+                rb.angularVelocity = state.AngularVelocity;
+            }
+        }
     }
 }
