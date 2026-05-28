@@ -3500,6 +3500,8 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585548}
+  - component: {fileID: 330585549}
   m_Layer: 0
   m_Name: RestaurantCam
   m_TagString: MainCamera
@@ -3514,7 +3516,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &330585545
 Camera:
   m_ObjectHideFlags: 0
@@ -3557,7 +3559,7 @@ Camera:
     m_Bits: 4294967295
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 0
+  m_TargetDisplay: 4
   m_TargetEye: 3
   m_HDR: 1
   m_AllowMSAA: 1
@@ -3626,6 +3628,34 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!114 &330585548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1c928ba31b5e1a4eb80f4f394cf1e24, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetDisplayCount: 5
+--- !u!114 &330585549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49896bb36333fab48a6250b7eaef8597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetDisplay: 4
+  stationCamera: {fileID: 330585545}
+  stationCanvas: {fileID: 599280380}
 --- !u!1 &331762795
 GameObject:
   m_ObjectHideFlags: 0
@@ -3989,136 +4019,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 338806424}
   m_CullTransparentMesh: 1
---- !u!1 &348530995
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 348530999}
-  - component: {fileID: 348530998}
-  - component: {fileID: 348530997}
-  - component: {fileID: 348530996}
-  - component: {fileID: 348531000}
-  m_Layer: 5
-  m_Name: CharacterSelectCanvas
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &348530996
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 348530995}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
-  m_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
---- !u!114 &348530997
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 348530995}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
-  m_ReferencePixelsPerUnit: 100
-  m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
-  m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
-  m_PhysicalUnit: 3
-  m_FallbackScreenDPI: 96
-  m_DefaultSpriteDPI: 96
-  m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
---- !u!223 &348530998
-Canvas:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 348530995}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_RenderMode: 1
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 1309.8
-  m_PixelPerfect: 0
-  m_ReceivesEvents: 1
-  m_OverrideSorting: 0
-  m_OverridePixelPerfect: 0
-  m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 25
-  m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: 98
-  m_TargetDisplay: 0
---- !u!224 &348530999
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 348530995}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0, y: 0, z: 0}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 996063899}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0, y: 0}
---- !u!114 &348531000
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 348530995}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb58b86423bc6314fb4cb78c6d08fa5f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  roleButtons:
-  - {fileID: 82798726}
-  - {fileID: 338806426}
-  - {fileID: 1612231849}
-  - {fileID: 649833543}
-  - {fileID: 2092005203}
-  continueButton: {fileID: 2092005203}
-  selectedRole: 
-  localPlayer: {fileID: 0}
-  networkManager: {fileID: 0}
-  stationText: {fileID: 0}
-  waitingScreen: {fileID: 604397839}
-  roleSelectionScreen: {fileID: 348530995}
-  roleSelectionBackground: {fileID: 0}
-  roleSelectionRoot: {fileID: 0}
 --- !u!1 &348690164
 GameObject:
   m_ObjectHideFlags: 0
@@ -5567,130 +5467,6 @@ Transform:
   - {fileID: 1131168655}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &495431784
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 495431785}
-  - component: {fileID: 495431786}
-  - component: {fileID: 495431787}
-  m_Layer: 0
-  m_Name: SceneRegister
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &495431785
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 495431784}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 7056505988081908262}
-  m_Father: {fileID: 540128217}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &495431786
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 495431784}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 68e10a4e029dd314684df6eebedd7e4d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  <OnStartServerCalled>k__BackingField: 0
-  <OnStartClientCalled>k__BackingField: 0
-  _onStartNetworkCalled: 0
-  _onStopNetworkCalled: 0
-  _componentIndexCache: 255
-  _addedNetworkObject: {fileID: 540128218}
-  _transportManagerCache: {fileID: 0}
-  _networkObjectCache: {fileID: 0}
-  _initializedOnceServer: 0
-  _initializedOnceClient: 0
-  _networkTrafficStatistics:
-    _enableMode: 0
-    _updateClient: 0
-    _updateServer: 0
-    _networkManager: {fileID: 0}
-    _initializedOnce: 0
-  _typeName: 
-  <IsBehaviourReconciling>k__BackingField: 0
-  _remainingReplicateResends: 0
-  _remainingReconcileResends: 0
-  _lastReplicateReadRemoteTick: 0
-  _replicateStartTick: 0
-  _lastOrderedReplicatedTick: 0
-  _lastReadReplicateTick: 0
-  _lastReadReconcileRemoteTick: 0
-  _lastReconcileTick: 0
-  _lastTransformPosition: {x: 0, y: 0, z: 0}
-  _lastTransformRotation: {x: 0, y: 0, z: 0, w: 0}
-  _lastTransformScale: {x: 0, y: 0, z: 0}
-  _usesPrediction: 0
-  _rpcMethodCount: 0
-  _rpcHashSize: 1
-  SyncTypeDirty: 0
---- !u!114 &495431787
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 495431784}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7742e9a41fb176c459af90201429b1e4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  <OnStartServerCalled>k__BackingField: 0
-  <OnStartClientCalled>k__BackingField: 0
-  _onStartNetworkCalled: 0
-  _onStopNetworkCalled: 0
-  _componentIndexCache: 255
-  _addedNetworkObject: {fileID: 540128218}
-  _transportManagerCache: {fileID: 0}
-  _networkObjectCache: {fileID: 0}
-  _initializedOnceServer: 0
-  _initializedOnceClient: 0
-  _networkTrafficStatistics:
-    _enableMode: 0
-    _updateClient: 0
-    _updateServer: 0
-    _networkManager: {fileID: 0}
-    _initializedOnce: 0
-  _typeName: 
-  <IsBehaviourReconciling>k__BackingField: 0
-  _remainingReplicateResends: 0
-  _remainingReconcileResends: 0
-  _lastReplicateReadRemoteTick: 0
-  _replicateStartTick: 0
-  _lastOrderedReplicatedTick: 0
-  _lastReadReplicateTick: 0
-  _lastReadReconcileRemoteTick: 0
-  _lastReconcileTick: 0
-  _lastTransformPosition: {x: 0, y: 0, z: 0}
-  _lastTransformRotation: {x: 0, y: 0, z: 0, w: 0}
-  _lastTransformScale: {x: 0, y: 0, z: 0}
-  _usesPrediction: 0
-  _rpcMethodCount: 0
-  _rpcHashSize: 1
-  SyncTypeDirty: 0
 --- !u!1 &536314872
 GameObject:
   m_ObjectHideFlags: 0
@@ -5861,7 +5637,6 @@ Transform:
   - {fileID: 772086429}
   - {fileID: 1410959778}
   - {fileID: 978515346}
-  - {fileID: 495431785}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &540128218
@@ -5876,75 +5651,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26b716c41e9b56b4baafaf13a523ba2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _onStartServerCalled: 0
-  _onStartClientCalled: 0
-  <IsNested>k__BackingField: 0
-  WasActiveDuringEdit: 1
-  WasActiveDuringEdit_Set1: 1
-  <ComponentIndex>k__BackingField: 0
-  <ObjectId>k__BackingField: 65535
-  <IsDeinitializing>k__BackingField: 1
-  <PredictedSpawn>k__BackingField: {fileID: 0}
-  <PredictedOwner>k__BackingField: {fileID: 0}
-  NetworkBehaviours: []
-  InitializedParentNetworkBehaviour: {fileID: 0}
-  InitializedNestedNetworkObjects: []
-  RuntimeParentNetworkBehaviour: {fileID: 0}
-  RuntimeChildNetworkBehaviours: []
-  _isNetworked: 1
-  _isSpawnable: 1
-  _isGlobal: 0
-  _initializeOrder: 0
-  _preventDespawnOnDisconnect: 0
-  _defaultDespawnType: 0
-  _disabledNetworkBehavioursInitialized: 0
-  _initializedTimestamp: 0
-  NetworkObserver: {fileID: 0}
-  ObserverAddedTick: 0
-  _networkObserverInitiliazed: 0
-  _renderersPopulated: 0
-  _lastClientHostVisibility: 0
-  _hashGrid: {fileID: 0}
-  _nextHashGridUpdateTime: 0
-  _isStatic: 0
-  _hashGridPosition: {x: 2147483647, y: 2147483647}
-  <IsObjectReconciling>k__BackingField: 0
-  _enablePrediction: 0
-  _predictionType: 0
-  _graphicalObject: {fileID: 0}
-  _detachGraphicalObject: 0
-  _enableStateForwarding: 1
-  _networkTransform: {fileID: 0}
-  _ownerInterpolation: 1
-  _ownerSmoothedProperties: 255
-  _adaptiveInterpolation: 3
-  _spectatorSmoothedProperties: 255
-  _spectatorInterpolation: 2
-  _enableTeleport: 0
-  _teleportThreshold: 1
-  _predictionBehaviours: []
-  <IsDestroying>k__BackingField: 0
-  <IsClientInitialized>k__BackingField: 0
-  <IsServerInitialized>k__BackingField: 0
-  <NetworkManager>k__BackingField: {fileID: 0}
-  <ServerManager>k__BackingField: {fileID: 0}
-  <ClientManager>k__BackingField: {fileID: 0}
-  <ObserverManager>k__BackingField: {fileID: 0}
-  <TransportManager>k__BackingField: {fileID: 0}
-  <TimeManager>k__BackingField: {fileID: 0}
-  <SceneManager>k__BackingField: {fileID: 0}
-  <PredictionManager>k__BackingField: {fileID: 0}
-  <RollbackManager>k__BackingField: {fileID: 0}
-  _rpcLinkIndexes: []
-  <PrefabId>k__BackingField: 65535
-  <SpawnableCollectionId>k__BackingField: 0
-  <AssetPathHash>k__BackingField: 0
-  SceneId: 3472345071
-  SerializedTransformProperties:
-    Position: {x: 0, y: 0, z: 0}
-    Rotation: {x: 0, y: 0, z: 0, w: 0}
-    Scale: {x: 0, y: 0, z: 0}
-    IsValid: 0
 --- !u!1 &561470849
 GameObject:
   m_ObjectHideFlags: 0
@@ -6893,7 +6599,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba8fb2340cac2614ca22e77b856cff74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  waitingText: {fileID: 1510637403}
 --- !u!1 &630299112
 GameObject:
   m_ObjectHideFlags: 0
@@ -9395,6 +9100,7 @@ GameObject:
   - component: {fileID: 882869901}
   - component: {fileID: 882869900}
   - component: {fileID: 882869898}
+  - component: {fileID: 882869902}
   m_Layer: 0
   m_Name: DishwasherCam
   m_TagString: Untagged
@@ -9488,7 +9194,7 @@ Camera:
     m_Bits: 4294967295
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 0
+  m_TargetDisplay: 3
   m_TargetEye: 3
   m_HDR: 1
   m_AllowMSAA: 1
@@ -9513,6 +9219,21 @@ Transform:
   - {fileID: 1016947067}
   m_Father: {fileID: 251036946}
   m_LocalEulerAnglesHint: {x: 50, y: 180, z: 0.007}
+--- !u!114 &882869902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 882869897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49896bb36333fab48a6250b7eaef8597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetDisplay: 3
+  stationCamera: {fileID: 882869900}
+  stationCanvas: {fileID: 0}
 --- !u!1 &886346708
 GameObject:
   m_ObjectHideFlags: 0
@@ -9738,13 +9459,14 @@ GameObject:
   - component: {fileID: 904240046}
   - component: {fileID: 904240045}
   - component: {fileID: 904240044}
+  - component: {fileID: 904240049}
   m_Layer: 0
   m_Name: KitchenCam
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &904240044
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9855,7 +9577,7 @@ Camera:
     m_Bits: 4294967295
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 0
+  m_TargetDisplay: 1
   m_TargetEye: 3
   m_HDR: 1
   m_AllowMSAA: 1
@@ -9880,6 +9602,21 @@ Transform:
   - {fileID: 6643216371522619392}
   m_Father: {fileID: 251036946}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &904240049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 904240043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49896bb36333fab48a6250b7eaef8597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetDisplay: 1
+  stationCamera: {fileID: 904240047}
+  stationCanvas: {fileID: 5436173903303409323}
 --- !u!1 &911230140
 GameObject:
   m_ObjectHideFlags: 0
@@ -10162,16 +9899,17 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 932768842}
-  - component: {fileID: 932768845}
   - component: {fileID: 932768844}
-  - component: {fileID: 932768843}
+  - component: {fileID: 932768846}
+  - component: {fileID: 932768845}
+  - component: {fileID: 932768847}
   m_Layer: 0
   m_Name: CashierCam
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &932768842
 Transform:
   m_ObjectHideFlags: 0
@@ -10188,7 +9926,15 @@ Transform:
   - {fileID: 1184094875}
   m_Father: {fileID: 251036946}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &932768843
+--- !u!81 &932768844
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 932768841}
+  m_Enabled: 0
+--- !u!114 &932768845
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10232,15 +9978,7 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
---- !u!81 &932768844
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 932768841}
-  m_Enabled: 0
---- !u!20 &932768845
+--- !u!20 &932768846
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10250,7 +9988,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 1, g: 0, b: 0, a: 1}
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -10274,7 +10012,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
-  orthographic: 1
+  orthographic: 0
   orthographic size: 5
   m_Depth: 0
   m_CullingMask:
@@ -10291,6 +10029,21 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &932768847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 932768841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49896bb36333fab48a6250b7eaef8597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetDisplay: 0
+  stationCamera: {fileID: 0}
+  stationCanvas: {fileID: 0}
 --- !u!1 &935459886
 GameObject:
   m_ObjectHideFlags: 0
@@ -10336,75 +10089,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26b716c41e9b56b4baafaf13a523ba2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _onStartServerCalled: 0
-  _onStartClientCalled: 0
-  <IsNested>k__BackingField: 0
-  WasActiveDuringEdit: 1
-  WasActiveDuringEdit_Set1: 1
-  <ComponentIndex>k__BackingField: 0
-  <ObjectId>k__BackingField: 65535
-  <IsDeinitializing>k__BackingField: 1
-  <PredictedSpawn>k__BackingField: {fileID: 0}
-  <PredictedOwner>k__BackingField: {fileID: 0}
-  NetworkBehaviours: []
-  InitializedParentNetworkBehaviour: {fileID: 0}
-  InitializedNestedNetworkObjects: []
-  RuntimeParentNetworkBehaviour: {fileID: 0}
-  RuntimeChildNetworkBehaviours: []
-  _isNetworked: 1
-  _isSpawnable: 1
-  _isGlobal: 0
-  _initializeOrder: 0
-  _preventDespawnOnDisconnect: 0
-  _defaultDespawnType: 0
-  _disabledNetworkBehavioursInitialized: 0
-  _initializedTimestamp: 0
-  NetworkObserver: {fileID: 0}
-  ObserverAddedTick: 0
-  _networkObserverInitiliazed: 0
-  _renderersPopulated: 0
-  _lastClientHostVisibility: 0
-  _hashGrid: {fileID: 0}
-  _nextHashGridUpdateTime: 0
-  _isStatic: 0
-  _hashGridPosition: {x: 2147483647, y: 2147483647}
-  <IsObjectReconciling>k__BackingField: 0
-  _enablePrediction: 0
-  _predictionType: 0
-  _graphicalObject: {fileID: 0}
-  _detachGraphicalObject: 0
-  _enableStateForwarding: 1
-  _networkTransform: {fileID: 0}
-  _ownerInterpolation: 1
-  _ownerSmoothedProperties: 255
-  _adaptiveInterpolation: 3
-  _spectatorSmoothedProperties: 255
-  _spectatorInterpolation: 2
-  _enableTeleport: 0
-  _teleportThreshold: 1
-  _predictionBehaviours: []
-  <IsDestroying>k__BackingField: 0
-  <IsClientInitialized>k__BackingField: 0
-  <IsServerInitialized>k__BackingField: 0
-  <NetworkManager>k__BackingField: {fileID: 0}
-  <ServerManager>k__BackingField: {fileID: 0}
-  <ClientManager>k__BackingField: {fileID: 0}
-  <ObserverManager>k__BackingField: {fileID: 0}
-  <TransportManager>k__BackingField: {fileID: 0}
-  <TimeManager>k__BackingField: {fileID: 0}
-  <SceneManager>k__BackingField: {fileID: 0}
-  <PredictionManager>k__BackingField: {fileID: 0}
-  <RollbackManager>k__BackingField: {fileID: 0}
-  _rpcLinkIndexes: []
-  <PrefabId>k__BackingField: 65535
-  <SpawnableCollectionId>k__BackingField: 0
-  <AssetPathHash>k__BackingField: 0
-  SceneId: 1828046827
-  SerializedTransformProperties:
-    Position: {x: 0, y: 0, z: 0}
-    Rotation: {x: 0, y: 0, z: 0, w: 0}
-    Scale: {x: 0, y: 0, z: 0}
-    IsValid: 0
 --- !u!114 &935459889
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10417,39 +10101,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46ede866fbd2a7445b6bf299ecffa394, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <OnStartServerCalled>k__BackingField: 0
-  <OnStartClientCalled>k__BackingField: 0
-  _onStartNetworkCalled: 0
-  _onStopNetworkCalled: 0
-  _componentIndexCache: 255
-  _addedNetworkObject: {fileID: 540128218}
-  _transportManagerCache: {fileID: 0}
-  _networkObjectCache: {fileID: 0}
-  _initializedOnceServer: 0
-  _initializedOnceClient: 0
-  _networkTrafficStatistics:
-    _enableMode: 0
-    _updateClient: 0
-    _updateServer: 0
-    _networkManager: {fileID: 0}
-    _initializedOnce: 0
-  _typeName: 
-  <IsBehaviourReconciling>k__BackingField: 0
-  _remainingReplicateResends: 0
-  _remainingReconcileResends: 0
-  _lastReplicateReadRemoteTick: 0
-  _replicateStartTick: 0
-  _lastOrderedReplicatedTick: 0
-  _lastReadReplicateTick: 0
-  _lastReadReconcileRemoteTick: 0
-  _lastReconcileTick: 0
-  _lastTransformPosition: {x: 0, y: 0, z: 0}
-  _lastTransformRotation: {x: 0, y: 0, z: 0, w: 0}
-  _lastTransformScale: {x: 0, y: 0, z: 0}
-  _usesPrediction: 0
-  _rpcMethodCount: 0
-  _rpcHashSize: 1
-  SyncTypeDirty: 0
 --- !u!1 &935946996
 GameObject:
   m_ObjectHideFlags: 0
@@ -11182,81 +10833,6 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 989109534}
-  m_CullTransparentMesh: 1
---- !u!1 &996063898
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 996063899}
-  - component: {fileID: 996063901}
-  - component: {fileID: 996063900}
-  m_Layer: 5
-  m_Name: RoleBackground
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &996063899
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 996063898}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 30}
-  m_LocalScale: {x: 1.4003952, y: 1.4003952, z: 1.4003952}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 348530999}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.00036621094, y: 0.0004272461}
-  m_SizeDelta: {x: -548.96, y: -308.79}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &996063900
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 996063898}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.8941177, b: 0.7686275, a: 1}
-  m_RaycastTarget: 0
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 9a41de0c8d795aa40a03289c00844a04, type: 3}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &996063901
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 996063898}
   m_CullTransparentMesh: 1
 --- !u!1 &1016947066
 GameObject:
@@ -13538,20 +13114,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb58b86423bc6314fb4cb78c6d08fa5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roleButtons:
-  - {fileID: 82798726}
-  - {fileID: 338806426}
-  - {fileID: 1612231849}
-  - {fileID: 649833543}
-  continueButton: {fileID: 2092005203}
-  selectedRole: 
-  localPlayer: {fileID: 0}
-  networkManager: {fileID: 0}
-  stationText: {fileID: 0}
-  waitingScreen: {fileID: 604397839}
-  roleSelectionScreen: {fileID: 1258819935}
-  roleSelectionBackground: {fileID: 1482564941}
-  roleSelectionRoot: {fileID: 1258819935}
 --- !u!1 &1283792881
 GameObject:
   m_ObjectHideFlags: 0
@@ -14491,6 +14053,7 @@ GameObject:
   - component: {fileID: 1407518013}
   - component: {fileID: 1407518012}
   - component: {fileID: 1407518011}
+  - component: {fileID: 1407518015}
   m_Layer: 0
   m_Name: StockerCam
   m_TagString: MainCamera
@@ -14592,7 +14155,7 @@ Camera:
     m_Bits: 4294967295
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 0
+  m_TargetDisplay: 2
   m_TargetEye: 3
   m_HDR: 1
   m_AllowMSAA: 1
@@ -14617,6 +14180,21 @@ Transform:
   - {fileID: 925625512095876818}
   m_Father: {fileID: 251036946}
   m_LocalEulerAnglesHint: {x: 0, y: -87.531, z: 0}
+--- !u!114 &1407518015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1407518010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49896bb36333fab48a6250b7eaef8597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetDisplay: 2
+  stationCamera: {fileID: 1407518013}
+  stationCanvas: {fileID: 0}
 --- !u!1 &1410959777
 GameObject:
   m_ObjectHideFlags: 0
@@ -17812,11 +17390,11 @@ PrefabInstance:
       objectReference: {fileID: 912012150}
     - target: {fileID: 1653593061024329100, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1653593061024329100, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: -17
       objectReference: {fileID: 0}
     - target: {fileID: 2128197544017580769, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_Size
@@ -17828,11 +17406,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2389849133665313520, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2389849133665313520, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2389849133665313520, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_AnchorMin.y
@@ -17852,23 +17430,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3875195827617281646, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 27.93
       objectReference: {fileID: 0}
     - target: {fileID: 4736216622782402922, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4736216622782402922, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4736216622782402922, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: -17
       objectReference: {fileID: 0}
     - target: {fileID: 4736216622782402922, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: -17
       objectReference: {fileID: 0}
     - target: {fileID: 5584581490454320906, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_Size
@@ -17888,7 +17466,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7124722318213202757, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 27.93
       objectReference: {fileID: 0}
     - target: {fileID: 7124722318213202757, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -17900,11 +17478,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7387496464397572136, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7387496464397572136, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: -17
       objectReference: {fileID: 0}
     - target: {fileID: 8577869970746973205, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_LocalPosition.x
@@ -17948,15 +17526,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8940096005391910719, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8940096005391910719, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8940096005391910719, guid: 4753bc3461640f34e92b758e641e9ba0, type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0
+      value: 0.0000004172325
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -20111,88 +19689,6 @@ RectTransform:
   m_AnchoredPosition: {x: -0.0000014305, y: 1.1}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &368294509362559868
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7700676783053543056}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26b716c41e9b56b4baafaf13a523ba2e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _onStartServerCalled: 0
-  _onStartClientCalled: 0
-  <IsNested>k__BackingField: 0
-  WasActiveDuringEdit: 1
-  WasActiveDuringEdit_Set1: 1
-  <ComponentIndex>k__BackingField: 0
-  <ObjectId>k__BackingField: 65535
-  <IsDeinitializing>k__BackingField: 1
-  <PredictedSpawn>k__BackingField: {fileID: 0}
-  <PredictedOwner>k__BackingField: {fileID: 0}
-  NetworkBehaviours:
-  - {fileID: 2758004758259636653}
-  InitializedParentNetworkBehaviour: {fileID: 0}
-  InitializedNestedNetworkObjects: []
-  RuntimeParentNetworkBehaviour: {fileID: 0}
-  RuntimeChildNetworkBehaviours: []
-  _isNetworked: 1
-  _isSpawnable: 1
-  _isGlobal: 0
-  _initializeOrder: 0
-  _preventDespawnOnDisconnect: 0
-  _defaultDespawnType: 0
-  _disabledNetworkBehavioursInitialized: 0
-  _initializedTimestamp: -8584358160183500758
-  NetworkObserver: {fileID: 0}
-  ObserverAddedTick: 0
-  _networkObserverInitiliazed: 0
-  _renderersPopulated: 0
-  _lastClientHostVisibility: 0
-  _hashGrid: {fileID: 0}
-  _nextHashGridUpdateTime: 0
-  _isStatic: 0
-  _hashGridPosition: {x: 2147483647, y: 2147483647}
-  <IsObjectReconciling>k__BackingField: 0
-  _enablePrediction: 0
-  _predictionType: 0
-  _graphicalObject: {fileID: 0}
-  _detachGraphicalObject: 0
-  _enableStateForwarding: 1
-  _networkTransform: {fileID: 0}
-  _ownerInterpolation: 1
-  _ownerSmoothedProperties: 255
-  _adaptiveInterpolation: 3
-  _spectatorSmoothedProperties: 255
-  _spectatorInterpolation: 2
-  _enableTeleport: 0
-  _teleportThreshold: 1
-  _predictionBehaviours: []
-  <IsDestroying>k__BackingField: 0
-  <IsClientInitialized>k__BackingField: 0
-  <IsServerInitialized>k__BackingField: 0
-  <NetworkManager>k__BackingField: {fileID: 0}
-  <ServerManager>k__BackingField: {fileID: 0}
-  <ClientManager>k__BackingField: {fileID: 0}
-  <ObserverManager>k__BackingField: {fileID: 0}
-  <TransportManager>k__BackingField: {fileID: 0}
-  <TimeManager>k__BackingField: {fileID: 0}
-  <SceneManager>k__BackingField: {fileID: 0}
-  <PredictionManager>k__BackingField: {fileID: 0}
-  <RollbackManager>k__BackingField: {fileID: 0}
-  _rpcLinkIndexes: []
-  <PrefabId>k__BackingField: 0
-  <SpawnableCollectionId>k__BackingField: 0
-  <AssetPathHash>k__BackingField: 494045362314552733
-  SceneId: 3976198125
-  SerializedTransformProperties:
-    Position: {x: 0, y: 0, z: 0}
-    Rotation: {x: 0, y: 0, z: 0, w: 1}
-    Scale: {x: 1, y: 1, z: 1}
-    IsValid: 1
 --- !u!4 &370429708784708511
 Transform:
   m_ObjectHideFlags: 0
@@ -21826,51 +21322,6 @@ Transform:
   - {fileID: 8664462135626812391}
   m_Father: {fileID: 925625512095876818}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2758004758259636653
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7700676783053543056}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7742e9a41fb176c459af90201429b1e4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  <OnStartServerCalled>k__BackingField: 0
-  <OnStartClientCalled>k__BackingField: 0
-  _onStartNetworkCalled: 0
-  _onStopNetworkCalled: 0
-  _componentIndexCache: 0
-  _addedNetworkObject: {fileID: 540128218}
-  _transportManagerCache: {fileID: 0}
-  _networkObjectCache: {fileID: 368294509362559868}
-  _initializedOnceServer: 0
-  _initializedOnceClient: 0
-  _networkTrafficStatistics:
-    _enableMode: 0
-    _updateClient: 0
-    _updateServer: 0
-    _networkManager: {fileID: 0}
-    _initializedOnce: 0
-  _typeName: 
-  <IsBehaviourReconciling>k__BackingField: 0
-  _remainingReplicateResends: 0
-  _remainingReconcileResends: 0
-  _lastReplicateReadRemoteTick: 0
-  _replicateStartTick: 0
-  _lastOrderedReplicatedTick: 0
-  _lastReadReplicateTick: 0
-  _lastReadReconcileRemoteTick: 0
-  _lastReconcileTick: 0
-  _lastTransformPosition: {x: 0, y: 0, z: 0}
-  _lastTransformRotation: {x: 0, y: 0, z: 0, w: 0}
-  _lastTransformScale: {x: 0, y: 0, z: 0}
-  _usesPrediction: 0
-  _rpcMethodCount: 0
-  _rpcHashSize: 1
-  SyncTypeDirty: 0
 --- !u!1 &2780392434295573656
 GameObject:
   m_ObjectHideFlags: 0
@@ -22287,7 +21738,7 @@ MonoBehaviour:
   setDragModeToSorting: 1
   clearExistingBeforeSpawn: 1
   spawnOnStart: 1
-  debugLogs: 0
+  debugLogs: 1
 --- !u!4 &3311036971092674877
 Transform:
   m_ObjectHideFlags: 0
@@ -25693,21 +25144,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2754885522998078342}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
---- !u!4 &7056505988081908262
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7700676783053543056}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 495431785}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7086710380315910911
 GameObject:
   m_ObjectHideFlags: 0
@@ -26106,24 +25542,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6616156281785176066}
   m_CullTransparentMesh: 1
---- !u!1 &7700676783053543056
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 7056505988081908262}
-  - component: {fileID: 2758004758259636653}
-  - component: {fileID: 368294509362559868}
-  m_Layer: 0
-  m_Name: NetworkGameManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
 --- !u!1 &7710068086167289669
 GameObject:
   m_ObjectHideFlags: 0
@@ -27213,7 +26631,6 @@ SceneRoots:
   - {fileID: 108597889}
   - {fileID: 540128217}
   - {fileID: 1238461411}
-  - {fileID: 348530999}
   - {fileID: 192182283}
   - {fileID: 487930252}
   - {fileID: 5634534306143873194}
