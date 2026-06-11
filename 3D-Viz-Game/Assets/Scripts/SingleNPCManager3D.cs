@@ -23,6 +23,8 @@ public class SingleNPCManager3D : MonoBehaviour
     public float turnSpeed = 12f;
     public float reenterDelay = 0.4f;
 
+    public GameObject npc;
+
     [Header("Start / Robustness")]
     [Tooltip("Force-teleport the NPC to Entry at startup (Awake/OnEnable/Start).")]
     public bool forceTeleportAtStart = true;
@@ -108,6 +110,7 @@ public class SingleNPCManager3D : MonoBehaviour
     // -------- flow --------
     IEnumerator EnterAndStartOrder()
     {
+        npc.SetActive(true);
         yield return MoveTo(talkPoint ? talkPoint.position : npcRoot.position);
         if (dialogueBox) dialogueBox.SetActive(true);
         if (orderMgr)    orderMgr.GenerateOrder();
