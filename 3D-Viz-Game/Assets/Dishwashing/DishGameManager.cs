@@ -6,6 +6,7 @@ public class DishGameManager : MonoBehaviour
 {
     [Header("Refs")]
     public DishlineController dishline;
+    public GameObject parallelize;
 
     [Header("Round")]
     public float roundDuration = 20f;
@@ -23,6 +24,7 @@ public class DishGameManager : MonoBehaviour
     float timeLeft;
     int score;       // number of plates cleaned
     bool running;
+    bool paralleled;
 
     void Start()
     {
@@ -59,6 +61,12 @@ public class DishGameManager : MonoBehaviour
         }
 
         ShowResults();
+    }
+
+    public void ParaButton()
+    {
+        paralleled = true;
+        parallelize.SetActive(false);
     }
 
     void Update()
@@ -100,7 +108,10 @@ public class DishGameManager : MonoBehaviour
         int timeUsed = Mathf.RoundToInt(roundDuration - timeLeft);
         if (resultsBodyText)
             resultsBodyText.text = $"Plates cleaned: {score}\nTime used: {FormatTime(timeUsed)}";
-
+        if (parallelize)
+        {
+            parallelize.SetActive(true);
+        }
         if (resultsCloseButton)
         {
             resultsCloseButton.onClick.RemoveAllListeners();
