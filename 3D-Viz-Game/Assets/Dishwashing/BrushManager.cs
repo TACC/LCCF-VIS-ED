@@ -15,7 +15,6 @@ public class BrushManager : MonoBehaviour
 
 
     [Header("Brush")]
-    // small visual to see where we are pointing, will change to small sponge later maybe?
     public WashBrush brushPrefab;
 
     // active brushes by pointer id, EnhancedTouch fingerId, or -1 for mouse

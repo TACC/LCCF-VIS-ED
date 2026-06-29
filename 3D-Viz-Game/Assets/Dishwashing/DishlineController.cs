@@ -18,15 +18,16 @@ public class DishlineController : MonoBehaviour
     public int maxQueue = 8;
     // how often they spawn in the rack
     public Vector2 spawnEvery = new Vector2(1.5f, 4f);
-    public float minRackDwellSeconds = 0.35f;
+    public float minRackDwellSeconds = 0.1f;
 
     struct QueueItem { public PlateController plate; public float timeIn; }
     readonly Queue<QueueItem> dirtyQueue = new Queue<QueueItem>();
 
-    [Header("Middle: Work area (max 3)")]
-    public Transform[] workSlots = new Transform[3];
+    [Header("Middle: Work area (max 3 if not parallelized)")]
+    public Transform[] workSlots = new Transform[6];
     public float toWorkDuration = 0.5f;
-    readonly PlateController[] active = new PlateController[3];
+    readonly PlateController[] active = new PlateController[6];
+    public bool isPara;
 
     [Header("Right: Clean stack")]
     public Transform cleanAnchor;
@@ -53,11 +54,17 @@ public class DishlineController : MonoBehaviour
         if (generatorCo != null) { StopCoroutine(generatorCo); generatorCo = null; }
     }
 
+    //clear all dishes when a round ends
+    public void clearAllDishes()
+    {
+
+    }
+
     Coroutine generatorCo;
 
     void OnValidate()
     {
-        if (workSlots == null || workSlots.Length != 3) workSlots = new Transform[3];
+        if (workSlots == null || workSlots.Length != 6) workSlots = new Transform[6];
         if (ease == null || ease.length < 2) ease = AnimationCurve.EaseInOut(0, 0, 1, 1);
         if (spawnEvery.x < 0.05f) spawnEvery.x = 0.05f;
         if (spawnEvery.y < spawnEvery.x) spawnEvery.y = spawnEvery.x;
