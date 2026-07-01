@@ -69,8 +69,9 @@ public class DishGameManager : MonoBehaviour
 
     public void ParaButton()
     {
-        Debug.Log("para pressed");
-
+        dishline.activeSlots = 6;
+        dishline.firstPara = true;
+        parallelize.SetActive(false);
     }
 
     void Update()

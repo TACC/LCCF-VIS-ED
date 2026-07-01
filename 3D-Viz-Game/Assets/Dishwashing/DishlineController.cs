@@ -27,7 +27,7 @@ public class DishlineController : MonoBehaviour
     public Transform[] workSlots = new Transform[6];
     public float toWorkDuration = 0.5f;
     readonly PlateController[] active = new PlateController[6];
-    public bool isPara;
+    public int activeSlots = 3; //slots being active at the time
 
     [Header("Right: Clean stack")]
     public Transform cleanAnchor;
@@ -41,6 +41,7 @@ public class DishlineController : MonoBehaviour
     public AnimationCurve ease = null;
     public float arcHeight = 0.12f;
 
+    public bool firstPara; //first time pressing summons 3 plates instantly
     public event System.Action<PlateController> OnPlateStacked;  // notify when plate is stacked on the right
     public int CleanCount => cleanCount;
 
@@ -75,7 +76,7 @@ public class DishlineController : MonoBehaviour
         if (!platePrefab) { Debug.LogError("[Dishline] Plate Prefab is not assigned."); return; }
         if (!dirtyAnchor) { Debug.LogError("[Dishline] Dirty Anchor not assigned."); return; }
         if (!cleanAnchor) { Debug.LogError("[Dishline] Clean Anchor not assigned."); return; }
-        for (int i = 0; i < 3; i++) if (!workSlots[i]) { Debug.LogError($"[Dishline] WorkSlot_{i} not assigned."); return; }
+        for (int i = 0; i < 6; i++) if (!workSlots[i]) { Debug.LogError($"[Dishline] WorkSlot_{i} not assigned."); return; }
 
         if (autoStart)
             generatorCo = StartCoroutine(DirtyGenerator());
@@ -124,7 +125,22 @@ public class DishlineController : MonoBehaviour
     void TryFillWorkSlots()
     {
         int freeSlot = -1;
-        for (int i = 0; i < active.Length; i++)
+        if (firstPara)
+        {
+            if (activeSlots != 6) activeSlots = 6;
+            firstPara = false;
+            for (int i = 3; i < activeSlots; i++)
+            {
+                if (active[i] == null)
+                {
+                    var instantFillPlate = Instantiate(platePrefab, dirtyAnchor.position, dirtyAnchor.rotation, transform);
+                    instantFillPlate.RespawnDirt();
+                    instantFillPlate.OnCleaned += HandlePlateCleaned;
+                    dirtyQueue.Enqueue(new QueueItem { plate = instantFillPlate, timeIn = Time.time });
+                }
+            }
+        }
+        for (int i = 0; i < activeSlots; i++)
             if (active[i] == null) { freeSlot = i; break; }
         if (freeSlot == -1) return;
         if (dirtyQueue.Count == 0) return;
