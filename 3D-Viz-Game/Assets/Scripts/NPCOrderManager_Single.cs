@@ -14,6 +14,8 @@ public class NPCOrderManager_Single : MonoBehaviour
         public string name;      // e.g., "Lettuce"
         public string unit;      // e.g., "g", "ml", "oz"
         [HideInInspector] public int assignedValue;
+
+        public DragDrop draggableItem;
     }
 
     public float ordernumber = 1; // For single NPC flow, this can be set to 1 or more for multiple rounds
@@ -44,6 +46,8 @@ public class NPCOrderManager_Single : MonoBehaviour
 
     public GameObject countertop;
 
+    public GameObject itemPool;
+
     //For bun answers only
     public int smallBun = 10;
     public int mediumBun = 20;
@@ -68,11 +72,18 @@ public class NPCOrderManager_Single : MonoBehaviour
     private List<string> npcOrderLines = new List<string>();
     private string previousLines = "";           // accumulated text already shown
 
+    [SerializeField] private GameObject[] slotDrops; // Delay before showing task after order
     void Start()
     {
         EnsureSessionAndMode();
         //ordTicket2.SetActive(false);
         ordTicket1.SetActive(true);
+        itemPool.SetActive(true); 
+        for (int i = 0; i < ingredients.Count; i++)
+        {
+            slotDrops[i].SetActive(false);
+        }
+
         bunChosen = false;
         countertop.SetActive(true);
         //taskAnim = GetComponent<Animator>();
@@ -96,6 +107,14 @@ public class NPCOrderManager_Single : MonoBehaviour
         npcOrderLines.Clear();
         previousLines = "";
         if (orderText) orderText.text = "";
+
+        foreach (var ing in ingredients)
+            {
+                if (ing.draggableItem != null)
+                {
+                    ing.draggableItem.ResetToPool();
+                }
+            }
 
         var correctValues = new List<string>();
 
@@ -145,11 +164,22 @@ public class NPCOrderManager_Single : MonoBehaviour
                         string line = $"I'll take a {ingredient.name} ({ingredient.assignedValue}{ingredient.unit}).";
                         npcOrderLines.Add(line);
                         correctValues.Add($"{ingredient.assignedValue}{ingredient.unit}");
+                        
+                        if (ingredient.draggableItem != null)
+                        {
+                            ingredient.draggableItem.itemValue = $"{ingredient.assignedValue}{ingredient.unit}";
+                            ingredient.draggableItem.ingredientName = "Bun";
+                        }
                     }
                 else
                     {
                         // If a bun has already been chosen, skip this one (treat as omitted)
                         correctValues.Add("None");
+                        if (ingredient.draggableItem != null)
+                        {
+                            ingredient.draggableItem.itemValue = "None";
+                            ingredient.draggableItem.ingredientName = "Bun";
+                        }
                     }
                     
                 continue;
@@ -164,6 +194,11 @@ public class NPCOrderManager_Single : MonoBehaviour
             
 
             correctValues.Add($"{ingredient.assignedValue}{ingredient.unit}");
+            if (ingredient.draggableItem != null)
+            {
+                ingredient.draggableItem.itemValue = $"{ingredient.assignedValue}{ingredient.unit}";
+                ingredient.draggableItem.ingredientName = ingredient.name;
+            }
         }
         print($"Correct values for ticket: {string.Join(", ", correctValues)}");
         // Shuffle only the SPOKEN lines for variety (ticket row order stays fixed)
@@ -349,6 +384,7 @@ public class NPCOrderManager_Single : MonoBehaviour
             //task.SetActive(false);
             taskAnim.SetTrigger("anim2");
             tickAnim.SetTrigger("animT2");
+            itemPool.SetActive(false); //REPLACE
             taskOut = false;
             // Transition logic and next game phase
             transitionPanelIn.SetActive(true);           
@@ -383,6 +419,7 @@ public class NPCOrderManager_Single : MonoBehaviour
             if (orderText) orderText.text = "Yay! (Standing end of phase2/Game)"; //Placeholder
             taskAnim.SetTrigger("anim2");
             tickPAnim.SetTrigger("animP2");
+            itemPool.SetActive(false); //REPLACE
             // End video/transition
             //THIS IS THE CURRENT END OF GAME
         }
@@ -409,7 +446,11 @@ public class NPCOrderManager_Single : MonoBehaviour
         {
             taskAnim.SetTrigger("anim1");
             tickAnim.SetTrigger("animT1"); //first phase ticket anim
-            if (phase2) tickPAnim.SetTrigger("animP1"); //second phase anim
+            if (phase2)
+            {
+                tickPAnim.SetTrigger("animP1"); //second phase anim
+                itemPool.SetActive(true); //REPLACE
+            } 
             taskOut = true;
         }
         foreach (var line in lines)

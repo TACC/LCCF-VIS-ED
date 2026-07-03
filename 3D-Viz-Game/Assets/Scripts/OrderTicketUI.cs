@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Linq;
+using NUnit.Framework.Constraints;
 
 public class OrderTicketUI : MonoBehaviour
 {
@@ -60,13 +61,50 @@ public class OrderTicketUI : MonoBehaviour
     private List<string> correctUnitValues;
     private List<string> correctItemValues;
 
+    
+
+    [Header("Drop Handler")]
+    [SerializeField] private DropHandler dropHandler;
+
+    //For drag and drop
+    private Dictionary<int, string> droppedAnswers = new Dictionary<int, string>();
+    private Dictionary<int, string> droppedIngredientNames = new Dictionary<int, string>();
+    
+    //Claude
+    private HashSet<int> lockedSlots = new HashSet<int>();
+
+    // Claude addition *
+    public bool isSlotLocked(int index)
+    {
+        return lockedSlots.Contains(index);
+    }
+
+    public void SetSlotLocked(int index, bool locked)
+    {
+        if (locked)
+        {
+            lockedSlots.Add(index);
+        }
+        else
+        {
+            lockedSlots.Remove(index);
+        }
+    }
+    // *
+    
     // Called by NPCOrderManager_Single with the correct answers for this round
     public void PopulateDropdowns(List<string> correct)
     {
+        droppedAnswers.Clear();
+        droppedIngredientNames.Clear();
+
+        lockedSlots.Clear(); // Claude
+        HideRows(); 
         correctValues = correct;
+        if (dropHandler != null) dropHandler.ResetSlots();
 
         // Build distractors, avoid collisions only with NON-BLANK answers
-        var nonBlankAnswers = new List<string>();
+        var nonBlankAnswers = new HashSet<string>();
         foreach (var v in correctValues)
             if (!string.IsNullOrEmpty(v)) nonBlankAnswers.Add(v);
 
@@ -106,8 +144,9 @@ public class OrderTicketUI : MonoBehaviour
             pair.dropdown.value = 0;                    // start on blank
             pair.dropdown.RefreshShownValue();
 
-            SetRowVisible(pair, true);
-            SetRowEditable(pair, true);
+            //SET THESE IN DragDrop
+            //SetRowVisible(pair, true);
+            //SetRowEditable(pair, true);
         }
         
 
@@ -184,6 +223,7 @@ public class OrderTicketUI : MonoBehaviour
     // Hook this to your Submit button
     public void CheckAnswers()
     {
+        Debug.Log("CHECKED");
         if (correctValues == null || correctValues.Count == 0)
         {
             Debug.LogWarning("OrderTicketUI: correctValues is empty; did NPC populate?");
@@ -192,6 +232,20 @@ public class OrderTicketUI : MonoBehaviour
 
         var corrections = new List<string>();
         bool anyIncorrect = false;
+
+        Debug.Log("Dropped Ingredients:");
+
+        foreach (var kvp in droppedIngredientNames)
+        {
+            Debug.Log($"Slot {kvp.Key}: {kvp.Value}");
+        }
+
+        Debug.Log("Dropped Values:");
+
+        foreach (var kvp in droppedAnswers)
+        {
+            Debug.Log($"Slot {kvp.Key}: {kvp.Value}");
+        }
 
         for (int i = 0; i < ingredientDropdowns.Count; i++)
         {
@@ -208,36 +262,108 @@ public class OrderTicketUI : MonoBehaviour
                 continue;
             }
 
-            string selected = (pair.dropdown.options.Count > pair.dropdown.value)
-                ? pair.dropdown.options[pair.dropdown.value].text
-                : "";
-
             string correct = correctValues[i]; // may be "" for omitted items
+            print($"Checking slot {i}: {pair.ingredientName} (correct: {correct})");
+            if (correct == "None")
+            {
+                //SetRowVisible(pair, false);
+                // corrections.Add("I did not ask for that.");
+                
+                // continue;
+
+                //Helped with Claude
+                int wrongSlot = -1;
+                foreach (var kvp in droppedIngredientNames)
+                {
+                    if (!string.IsNullOrEmpty(kvp.Value) && 
+                    (kvp.Value.ToLower().Contains(pair.ingredientName.ToLower()) 
+                    || pair.ingredientName.ToLower().Contains(kvp.Value.ToLower())))
+                    {
+                        wrongSlot = kvp.Key;
+                        break;
+                    }
+                    
+                }
+
+                if (wrongSlot != -1)
+                {
+                    anyIncorrect = true;
+                    var wrongSlotPair = ingredientDropdowns[wrongSlot];
+                    SetRowVisible(wrongSlotPair, true);
+                    SetRowEditable(wrongSlotPair, true);
+                    corrections.Add($"I did not ask for <color=red><b>{pair.ingredientName}</b></color>.");
+                    
+                }
+                continue;
+            }
+
+            int matchedSlot = -1;
+            foreach (var kvp in droppedAnswers)
+            {
+
+                
+                if (droppedIngredientNames.TryGetValue(kvp.Key, out string droppedName))
+                {
+                    Debug.Log($"Comparing '{pair.ingredientName}' to '{droppedName}'");
+                    if (droppedName.ToLower().Contains(pair.ingredientName.ToLower())
+                    || pair.ingredientName.ToLower().Contains(droppedName.ToLower()))
+                    {
+                        print(kvp.Key);
+                        matchedSlot = kvp.Key;
+                        
+                        break;
+                    }
+                }
+            }
+
+            print(pair.ingredientName);
+            if (matchedSlot == -1 && !pair.ingredientName.ToLower().Contains("bun"))
+            {
+                anyIncorrect = true;
+                // SetRowVisible(pair, true);
+                // SetRowVisible(pair, true);
+                string missingName = string.IsNullOrEmpty(pair.ingredientName) ? "an ingredient" : pair.ingredientName;
+                print("first");
+                corrections.Add($"You forgot to add <color=red><b>{missingName} ({correct})</b></color=red>");
+                continue;
+            }
+
+            var slotRow = ingredientDropdowns[matchedSlot];
+            var slotDropdown = slotRow.dropdown;
+
+            //var slotPair = ingredientDropdowns[matchedSlot].dropdown;
+            string selected = (slotDropdown.options.Count > slotDropdown.value)
+                ? slotDropdown.options[slotDropdown.value].text : "";
+
+            
+            //pair.dropdown = ingredientDropdowns[matchedSlot].dropdown;
             bool isCorrect = (selected == correct);
 
             if (isCorrect)
             {
                 if (hideCorrectRows)
-                    SetRowVisible(pair, false);
+                {
+                   SetRowVisible(slotRow, false);
+                   SetSlotLocked(matchedSlot, true); // Claude 
+                }
                 else
-                    SetRowEditable(pair, false);
+                    SetRowEditable(slotRow, false);
             }
             else
             {
                 anyIncorrect = true;
 
                 // Keep incorrect visible & editable
-                SetRowVisible(pair, true);
-                SetRowEditable(pair, true);
+                SetRowVisible(slotRow, true);
+                SetRowEditable(slotRow, true);
 
-                if (string.IsNullOrEmpty(correct) && !string.IsNullOrEmpty(selected))
+                if (string.IsNullOrEmpty(correct) && selected != "None")
                 {
                     // Omitted item but player entered something
                     corrections.Add("I did not ask for that.");
                 }
                 else
                 {
-                    
                     string name = string.IsNullOrEmpty(pair.ingredientName) ? "that" : pair.ingredientName;
                     print (pair.ingredientName);
                     print (correct);
@@ -251,6 +377,7 @@ public class OrderTicketUI : MonoBehaviour
                     }
                     else
                     {
+                        print("Second");
                         corrections.Add($"No, I said <color=red><b>{correct}</b></color> of <color=red><b>{name}</b></color>.");
                     }
                     
@@ -335,7 +462,7 @@ public class OrderTicketUI : MonoBehaviour
                         // else if (correct.Contains("30")) name = "Large Bun (30g)";
                         //name = "Bun"
                        
-                        corrections.Add($"The bun should be in {correct}."); //Possible placeholder
+                        corrections.Add($"The bun should be in {correct}."); //IRRELEVENT
                     }
                     else
                     {
@@ -417,13 +544,13 @@ public class OrderTicketUI : MonoBehaviour
         if (incorrectOverlay) incorrectOverlay.SetActive(false);
     }
 
-    private void SetRowVisible(IngredientDropdownPair pair, bool visible)
+    public void SetRowVisible(IngredientDropdownPair pair, bool visible)
     {
         if (pair.rowRoot) pair.rowRoot.SetActive(visible);
         else if (pair.dropdown) pair.dropdown.gameObject.SetActive(visible);
     }
 
-    private void SetRowEditable(IngredientDropdownPair pair, bool editable)
+    public void SetRowEditable(IngredientDropdownPair pair, bool editable)
     {
         if (pair.rowCanvasGroup)
         {
@@ -483,4 +610,101 @@ public class OrderTicketUI : MonoBehaviour
             (list[i], list[rand]) = (list[rand], list[i]);
         }
     }
+
+    public void RevealRow (int index)
+    {
+        if (index < 0 || index >= ingredientDropdowns.Count) return;
+
+        var pair = ingredientDropdowns[index];
+        SetRowVisible(pair, true);
+        SetRowEditable(pair, true);
+
+        if (pair.rowRoot)
+        {
+            var anim = pair.rowRoot.GetComponent<Animator>();
+            if (anim) anim.SetTrigger("popDown");
+        }
+    }
+
+    public void SetDropdownAnswer(int index, string value)
+    {
+        if (index < 0 || index >= ingredientDropdowns.Count) return;
+
+        var pair = ingredientDropdowns[index];
+        if (!pair.dropdown) return;
+
+        for (int i = 0; i < pair.dropdown.options.Count; i++)
+        {
+            if (pair.dropdown.options[i].text == value)
+            {
+                pair.dropdown.value = i;
+                pair.dropdown.RefreshShownValue();
+                return;
+            }
+            
+        }
+    }
+
+    
+    public void RegisterDrop(int index, string value)
+    {
+        droppedAnswers[index] = value;
+    }
+
+    //Claude
+    public void RegisterDropName(int index, string ingredientName)
+    {
+        droppedIngredientNames[index] = ingredientName;
+
+        Debug.Log($"REGISTERED: slot {index} -> {ingredientName}");
+    }
+
+    //Mine
+    public string getDropValue(int index)
+    {
+        return droppedAnswers[index];
+    }
+
+    public string getDropName(int index)
+    {
+        return droppedIngredientNames[index];
+    }
+
+    //Claude
+    public int GetSelectedIndex(int index)
+    {
+        if (index < 0 || index >= ingredientDropdowns.Count) return 0;
+        var pair = ingredientDropdowns[index];
+        if (!pair.dropdown) return 0;
+        return pair.dropdown.value;
+    }
+
+    public void SetDropdownIndex(int index, int dropdownIndex)
+    {
+        if (index < 0 || index >= ingredientDropdowns.Count) return;
+
+        var pair = ingredientDropdowns[index];
+        if (!pair.dropdown) return;
+
+        if (dropdownIndex < 0 || dropdownIndex >= pair.dropdown.options.Count) return;
+
+        pair.dropdown.value = dropdownIndex;
+        pair.dropdown.RefreshShownValue();
+    }
+
+    public void HideRows()
+    {
+        foreach (var pair in ingredientDropdowns)
+        {
+            SetRowVisible(pair, false);
+            SetRowEditable(pair, true);
+
+            if (pair.dropdown)
+            {
+                pair.dropdown.value = 0;
+                pair.dropdown.RefreshShownValue();
+            }
+        }
+    }
+
 }
