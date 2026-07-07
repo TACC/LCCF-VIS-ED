@@ -21,6 +21,8 @@ public class BurgerIngredientSpawner : MonoBehaviour
     public int[] ingredientSequence = { 0, 1, 2, 3, 4, 5 };
 
     [SerializeField] private BurgerStackManager stackManager;
+    [Header ("StationCamera")]
+    [SerializeField] private Camera stationCamera;
 
     [Header("Plate System")]
     [SerializeField] private GameObject plateGroup;          // Current plate + bottom bun in scene
@@ -86,6 +88,7 @@ public class BurgerIngredientSpawner : MonoBehaviour
             {
                 drag.mode = DragHandler3D.DragMode.BurgerBuild;
                 drag.SetSpawnPoint(sp);
+                drag.SetDragCamera(stationCamera); // ensure the DragHandler3D knows which camera to use for raycasting
                 drag.MarkInStack(false);
             }
 
