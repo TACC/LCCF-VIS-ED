@@ -288,6 +288,11 @@ public class DragHandler3D : MonoBehaviour
         if (logDebug) Debug.Log($"[RETURN] {name} -> {spawnPoint.name} (mode={mode})", this);
     }
 
+    public void SetDragCamera(Camera cam)
+    {
+    dragCamera = cam;
+    }
+
     public void SetSpawnPoint(Transform point)
     {
         spawnPoint = point;

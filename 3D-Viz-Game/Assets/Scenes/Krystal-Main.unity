@@ -4331,6 +4331,7 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
+  m_IsActive: 0
 --- !u!114 &192182280
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4737,12 +4738,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dishline: {fileID: 1795035488}
   roundDuration: 20
-  timerText: {fileID: 235624146}
-  scoreText: {fileID: 2108300087}
-  resultsPanel: {fileID: 232346388}
-  resultsTitleText: {fileID: 27377870}
-  resultsBodyText: {fileID: 471030186}
-  resultsCloseButton: {fileID: 1037623630}
+  timerText: {fileID: 0}
+  scoreText: {fileID: 0}
+  resultsPanel: {fileID: 0}
+  resultsTitleText: {fileID: 0}
+  resultsBodyText: {fileID: 0}
+  resultsCloseButton: {fileID: 0}
 --- !u!1 &211016936
 GameObject:
   m_ObjectHideFlags: 0
@@ -7293,6 +7294,8 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585548}
+  - component: {fileID: 330585549}
   m_Layer: 0
   m_Name: RestaurantCam
   m_TagString: MainCamera
@@ -7307,7 +7310,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &330585545
 Camera:
   m_ObjectHideFlags: 0
@@ -7350,7 +7353,7 @@ Camera:
     m_Bits: 4294967295
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 0
+  m_TargetDisplay: 4
   m_TargetEye: 3
   m_HDR: 1
   m_AllowMSAA: 1
@@ -7419,6 +7422,34 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!114 &330585548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1c928ba31b5e1a4eb80f4f394cf1e24, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetDisplayCount: 5
+--- !u!114 &330585549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49896bb36333fab48a6250b7eaef8597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetDisplay: 4
+  stationCamera: {fileID: 330585545}
+  stationCanvas: {fileID: 599280380}
 --- !u!1 &331762795
 GameObject:
   m_ObjectHideFlags: 0
@@ -11402,7 +11433,6 @@ Transform:
   - {fileID: 772086429}
   - {fileID: 1410959778}
   - {fileID: 978515346}
-  - {fileID: 495431785}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &540128218
@@ -15750,11 +15780,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_IsOn: 1
---- !u!224 &743445642 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 4798293251784656707, guid: af8be0b9b2f36ca439688f0006768fa7, type: 3}
-  m_PrefabInstance: {fileID: 1036884706}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &745735758
 GameObject:
   m_ObjectHideFlags: 0
@@ -18866,6 +18891,7 @@ GameObject:
   - component: {fileID: 882869901}
   - component: {fileID: 882869900}
   - component: {fileID: 882869898}
+  - component: {fileID: 882869902}
   m_Layer: 0
   m_Name: DishwasherCam
   m_TagString: Untagged
@@ -18959,7 +18985,7 @@ Camera:
     m_Bits: 4294967295
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 0
+  m_TargetDisplay: 3
   m_TargetEye: 3
   m_HDR: 1
   m_AllowMSAA: 1
@@ -18984,6 +19010,21 @@ Transform:
   - {fileID: 1016947067}
   m_Father: {fileID: 251036946}
   m_LocalEulerAnglesHint: {x: 50, y: 180, z: 0.007}
+--- !u!114 &882869902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 882869897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49896bb36333fab48a6250b7eaef8597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetDisplay: 3
+  stationCamera: {fileID: 882869900}
+  stationCanvas: {fileID: 0}
 --- !u!1 &886346708
 GameObject:
   m_ObjectHideFlags: 0
@@ -19209,6 +19250,7 @@ GameObject:
   - component: {fileID: 904240046}
   - component: {fileID: 904240045}
   - component: {fileID: 904240044}
+  - component: {fileID: 904240049}
   m_Layer: 0
   m_Name: KitchenCam
   m_TagString: MainCamera
@@ -19326,7 +19368,7 @@ Camera:
     m_Bits: 4294967295
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 0
+  m_TargetDisplay: 1
   m_TargetEye: 3
   m_HDR: 1
   m_AllowMSAA: 1
@@ -19697,9 +19739,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 932768842}
-  - component: {fileID: 932768845}
   - component: {fileID: 932768844}
-  - component: {fileID: 932768843}
+  - component: {fileID: 932768846}
+  - component: {fileID: 932768845}
+  - component: {fileID: 932768847}
   m_Layer: 0
   m_Name: CashierCam
   m_TagString: Untagged
@@ -19723,7 +19766,15 @@ Transform:
   - {fileID: 8577869969157723932}
   m_Father: {fileID: 251036946}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &932768843
+--- !u!81 &932768844
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 932768841}
+  m_Enabled: 0
+--- !u!114 &932768845
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -19767,15 +19818,7 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
---- !u!81 &932768844
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 932768841}
-  m_Enabled: 0
---- !u!20 &932768845
+--- !u!20 &932768846
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -19809,7 +19852,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
-  orthographic: 1
+  orthographic: 0
   orthographic size: 5
   m_Depth: 0
   m_CullingMask:
@@ -19826,6 +19869,21 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &932768847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 932768841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49896bb36333fab48a6250b7eaef8597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetDisplay: 0
+  stationCamera: {fileID: 0}
+  stationCanvas: {fileID: 0}
 --- !u!1 &935459886
 GameObject:
   m_ObjectHideFlags: 0
@@ -19843,7 +19901,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &935459887
 Transform:
   m_ObjectHideFlags: 0
@@ -29562,6 +29620,7 @@ GameObject:
   - component: {fileID: 1407518013}
   - component: {fileID: 1407518012}
   - component: {fileID: 1407518011}
+  - component: {fileID: 1407518015}
   m_Layer: 0
   m_Name: StockerCam
   m_TagString: MainCamera
@@ -29663,7 +29722,7 @@ Camera:
     m_Bits: 4294967295
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 0
+  m_TargetDisplay: 2
   m_TargetEye: 3
   m_HDR: 1
   m_AllowMSAA: 1
@@ -29688,6 +29747,21 @@ Transform:
   - {fileID: 925625512095876818}
   m_Father: {fileID: 251036946}
   m_LocalEulerAnglesHint: {x: 0, y: -87.531, z: 0}
+--- !u!114 &1407518015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1407518010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49896bb36333fab48a6250b7eaef8597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetDisplay: 2
+  stationCamera: {fileID: 1407518013}
+  stationCanvas: {fileID: 0}
 --- !u!1 &1410959777
 GameObject:
   m_ObjectHideFlags: 0
@@ -50876,6 +50950,7 @@ MonoBehaviour:
   - {fileID: 3056794856356206204}
   itemsParent: {fileID: 4427924873442742113}
   conveyor: {fileID: 2109518007684525469}
+  stationCamera: {fileID: 1407518013}
   arriveDuration: 0.45
   arriveCurve:
     serializedVersion: 2
@@ -60471,10 +60546,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7710068086167289669}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: -7.83, z: -0.81}
+  m_GameObject: {fileID: 984434332125642537}
+  m_CullTransparentMesh: 1
+--- !u!224 &7037137609732342499
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6401495181991547946}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -61164,6 +61246,7 @@ MonoBehaviour:
   - {fileID: 6178697289380730059}
   ingredientSequence: 000000000100000002000000030000000400000005000000
   stackManager: {fileID: 248004829818653262}
+  stationCamera: {fileID: 904240047}
   plateGroup: {fileID: 2609153764193953167}
   newPlateGroupPrefab: {fileID: 4621435846417161535, guid: d4120cc3aaa0a754fb0f9cc005bd177b, type: 3}
   spawnPointLeft: {fileID: 4473059487114756973}
@@ -65198,14 +65281,13 @@ SceneRoots:
   - {fileID: 108597889}
   - {fileID: 540128217}
   - {fileID: 1238461411}
-  - {fileID: 348530999}
   - {fileID: 192182283}
   - {fileID: 487930252}
   - {fileID: 5634534306143873194}
-  - {fileID: 1036884706}
   - {fileID: 745735760}
   - {fileID: 800474115}
   - {fileID: 891595728}
   - {fileID: 1910780894}
   - {fileID: 8629367631788654954}
   - {fileID: 1085503421}
+  - {fileID: 870338051}
