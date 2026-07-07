@@ -8071,6 +8071,9 @@ MonoBehaviour:
   - {fileID: 649833543}
   - {fileID: 2092005203}
   continueButton: {fileID: 2092005203}
+  selectedRole: 
+  localPlayer: {fileID: 0}
+  networkManager: {fileID: 0}
   stationText: {fileID: 0}
   waitingScreen: {fileID: 604397839}
   roleSelectionScreen: {fileID: 348530995}
@@ -11052,9 +11055,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68e10a4e029dd314684df6eebedd7e4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <OnStartServerCalled>k__BackingField: 0
+  <OnStartClientCalled>k__BackingField: 0
+  _onStartNetworkCalled: 0
+  _onStopNetworkCalled: 0
   _componentIndexCache: 255
   _addedNetworkObject: {fileID: 540128218}
+  _transportManagerCache: {fileID: 0}
   _networkObjectCache: {fileID: 0}
+  _initializedOnceServer: 0
+  _initializedOnceClient: 0
+  _networkTrafficStatistics:
+    _enableMode: 0
+    _updateClient: 0
+    _updateServer: 0
+    _networkManager: {fileID: 0}
+    _initializedOnce: 0
+  _typeName: 
+  <IsBehaviourReconciling>k__BackingField: 0
+  _remainingReplicateResends: 0
+  _remainingReconcileResends: 0
+  _lastReplicateReadRemoteTick: 0
+  _replicateStartTick: 0
+  _lastOrderedReplicatedTick: 0
+  _lastReadReplicateTick: 0
+  _lastReadReconcileRemoteTick: 0
+  _lastReconcileTick: 0
+  _lastTransformPosition: {x: 0, y: 0, z: 0}
+  _lastTransformRotation: {x: 0, y: 0, z: 0, w: 0}
+  _lastTransformScale: {x: 0, y: 0, z: 0}
+  _usesPrediction: 0
+  _rpcMethodCount: 0
+  _rpcHashSize: 1
+  SyncTypeDirty: 0
 --- !u!114 &495431787
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11067,9 +11100,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7742e9a41fb176c459af90201429b1e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <OnStartServerCalled>k__BackingField: 0
+  <OnStartClientCalled>k__BackingField: 0
+  _onStartNetworkCalled: 0
+  _onStopNetworkCalled: 0
   _componentIndexCache: 255
   _addedNetworkObject: {fileID: 540128218}
+  _transportManagerCache: {fileID: 0}
   _networkObjectCache: {fileID: 0}
+  _initializedOnceServer: 0
+  _initializedOnceClient: 0
+  _networkTrafficStatistics:
+    _enableMode: 0
+    _updateClient: 0
+    _updateServer: 0
+    _networkManager: {fileID: 0}
+    _initializedOnce: 0
+  _typeName: 
+  <IsBehaviourReconciling>k__BackingField: 0
+  _remainingReplicateResends: 0
+  _remainingReconcileResends: 0
+  _lastReplicateReadRemoteTick: 0
+  _replicateStartTick: 0
+  _lastOrderedReplicatedTick: 0
+  _lastReadReplicateTick: 0
+  _lastReadReconcileRemoteTick: 0
+  _lastReconcileTick: 0
+  _lastTransformPosition: {x: 0, y: 0, z: 0}
+  _lastTransformRotation: {x: 0, y: 0, z: 0, w: 0}
+  _lastTransformScale: {x: 0, y: 0, z: 0}
+  _usesPrediction: 0
+  _rpcMethodCount: 0
+  _rpcHashSize: 1
+  SyncTypeDirty: 0
 --- !u!1 &498431773
 GameObject:
   m_ObjectHideFlags: 0
@@ -11354,10 +11417,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26b716c41e9b56b4baafaf13a523ba2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _onStartServerCalled: 0
+  _onStartClientCalled: 0
   <IsNested>k__BackingField: 0
   WasActiveDuringEdit: 1
   WasActiveDuringEdit_Set1: 1
   <ComponentIndex>k__BackingField: 0
+  <ObjectId>k__BackingField: 65535
+  <IsDeinitializing>k__BackingField: 1
   <PredictedSpawn>k__BackingField: {fileID: 0}
   <PredictedOwner>k__BackingField: {fileID: 0}
   NetworkBehaviours: []
@@ -11371,8 +11438,18 @@ MonoBehaviour:
   _initializeOrder: 0
   _preventDespawnOnDisconnect: 0
   _defaultDespawnType: 0
+  _disabledNetworkBehavioursInitialized: 0
   _initializedTimestamp: 0
   NetworkObserver: {fileID: 0}
+  ObserverAddedTick: 0
+  _networkObserverInitiliazed: 0
+  _renderersPopulated: 0
+  _lastClientHostVisibility: 0
+  _hashGrid: {fileID: 0}
+  _nextHashGridUpdateTime: 0
+  _isStatic: 0
+  _hashGridPosition: {x: 2147483647, y: 2147483647}
+  <IsObjectReconciling>k__BackingField: 0
   _enablePrediction: 0
   _predictionType: 0
   _graphicalObject: {fileID: 0}
@@ -11386,6 +11463,20 @@ MonoBehaviour:
   _spectatorInterpolation: 2
   _enableTeleport: 0
   _teleportThreshold: 1
+  _predictionBehaviours: []
+  <IsDestroying>k__BackingField: 0
+  <IsClientInitialized>k__BackingField: 0
+  <IsServerInitialized>k__BackingField: 0
+  <NetworkManager>k__BackingField: {fileID: 0}
+  <ServerManager>k__BackingField: {fileID: 0}
+  <ClientManager>k__BackingField: {fileID: 0}
+  <ObserverManager>k__BackingField: {fileID: 0}
+  <TransportManager>k__BackingField: {fileID: 0}
+  <TimeManager>k__BackingField: {fileID: 0}
+  <SceneManager>k__BackingField: {fileID: 0}
+  <PredictionManager>k__BackingField: {fileID: 0}
+  <RollbackManager>k__BackingField: {fileID: 0}
+  _rpcLinkIndexes: []
   <PrefabId>k__BackingField: 65535
   <SpawnableCollectionId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 0
@@ -12390,119 +12481,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 595329361}
   m_CullTransparentMesh: 1
---- !u!1001 &595520899
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1312352244, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 155.1001
-      objectReference: {fileID: 0}
-    - target: {fileID: 1312352244, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -52.69995
-      objectReference: {fileID: 0}
-    - target: {fileID: 390329389210975320, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 232.6001
-      objectReference: {fileID: 0}
-    - target: {fileID: 390329389210975320, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -121.3999
-      objectReference: {fileID: 0}
-    - target: {fileID: 3414662637742749596, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 78.1001
-      objectReference: {fileID: 0}
-    - target: {fileID: 3414662637742749596, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -121.40015
-      objectReference: {fileID: 0}
-    - target: {fileID: 7443408887813606049, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -359
-      objectReference: {fileID: 0}
-    - target: {fileID: 7443408887813606049, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -444
-      objectReference: {fileID: 0}
-    - target: {fileID: 7443408887813606049, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 518
-      objectReference: {fileID: 0}
-    - target: {fileID: 7443408887813606049, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7443408887813606049, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7443408887813606049, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7443408887813606049, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7443408887813606049, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7443408887813606049, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7443408887813606049, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7443408887813606050, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: _spawnablePrefabs
-      value: 
-      objectReference: {fileID: 11400000, guid: d4f070865c8860b4999585ad7feeb104, type: 2}
-    - target: {fileID: 7443408887813606051, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_Name
-      value: NetworkManager
-      objectReference: {fileID: 0}
-    - target: {fileID: 7443408887813606051, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7443408887813606060, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7443408887813606060, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: _playerPrefab
-      value: 
-      objectReference: {fileID: 4250956628517991199, guid: af8be0b9b2f36ca439688f0006768fa7, type: 3}
-    - target: {fileID: 7443408887813606060, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: Spawns.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 7443408887813606060, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: 'Spawns.Array.data[0]'
-      value: 
-      objectReference: {fileID: 1164214211}
-    - target: {fileID: 7443408887813606060, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: 'Spawns.Array.data[1]'
-      value: 
-      objectReference: {fileID: 237978153}
-    - target: {fileID: 7443408887813606060, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
-      propertyPath: 'Spawns.Array.data[2]'
-      value: 
-      objectReference: {fileID: 7056505988081908262}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
 --- !u!1 &595871531
 GameObject:
   m_ObjectHideFlags: 0
@@ -19893,10 +19871,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26b716c41e9b56b4baafaf13a523ba2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _onStartServerCalled: 0
+  _onStartClientCalled: 0
   <IsNested>k__BackingField: 0
   WasActiveDuringEdit: 1
   WasActiveDuringEdit_Set1: 1
   <ComponentIndex>k__BackingField: 0
+  <ObjectId>k__BackingField: 65535
+  <IsDeinitializing>k__BackingField: 1
   <PredictedSpawn>k__BackingField: {fileID: 0}
   <PredictedOwner>k__BackingField: {fileID: 0}
   NetworkBehaviours: []
@@ -19910,8 +19892,18 @@ MonoBehaviour:
   _initializeOrder: 0
   _preventDespawnOnDisconnect: 0
   _defaultDespawnType: 0
+  _disabledNetworkBehavioursInitialized: 0
   _initializedTimestamp: 0
   NetworkObserver: {fileID: 0}
+  ObserverAddedTick: 0
+  _networkObserverInitiliazed: 0
+  _renderersPopulated: 0
+  _lastClientHostVisibility: 0
+  _hashGrid: {fileID: 0}
+  _nextHashGridUpdateTime: 0
+  _isStatic: 0
+  _hashGridPosition: {x: 2147483647, y: 2147483647}
+  <IsObjectReconciling>k__BackingField: 0
   _enablePrediction: 0
   _predictionType: 0
   _graphicalObject: {fileID: 0}
@@ -19925,6 +19917,20 @@ MonoBehaviour:
   _spectatorInterpolation: 2
   _enableTeleport: 0
   _teleportThreshold: 1
+  _predictionBehaviours: []
+  <IsDestroying>k__BackingField: 0
+  <IsClientInitialized>k__BackingField: 0
+  <IsServerInitialized>k__BackingField: 0
+  <NetworkManager>k__BackingField: {fileID: 0}
+  <ServerManager>k__BackingField: {fileID: 0}
+  <ClientManager>k__BackingField: {fileID: 0}
+  <ObserverManager>k__BackingField: {fileID: 0}
+  <TransportManager>k__BackingField: {fileID: 0}
+  <TimeManager>k__BackingField: {fileID: 0}
+  <SceneManager>k__BackingField: {fileID: 0}
+  <PredictionManager>k__BackingField: {fileID: 0}
+  <RollbackManager>k__BackingField: {fileID: 0}
+  _rpcLinkIndexes: []
   <PrefabId>k__BackingField: 65535
   <SpawnableCollectionId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 0
@@ -19946,9 +19952,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46ede866fbd2a7445b6bf299ecffa394, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <OnStartServerCalled>k__BackingField: 0
+  <OnStartClientCalled>k__BackingField: 0
+  _onStartNetworkCalled: 0
+  _onStopNetworkCalled: 0
   _componentIndexCache: 255
   _addedNetworkObject: {fileID: 540128218}
+  _transportManagerCache: {fileID: 0}
   _networkObjectCache: {fileID: 0}
+  _initializedOnceServer: 0
+  _initializedOnceClient: 0
+  _networkTrafficStatistics:
+    _enableMode: 0
+    _updateClient: 0
+    _updateServer: 0
+    _networkManager: {fileID: 0}
+    _initializedOnce: 0
+  _typeName: 
+  <IsBehaviourReconciling>k__BackingField: 0
+  _remainingReplicateResends: 0
+  _remainingReconcileResends: 0
+  _lastReplicateReadRemoteTick: 0
+  _replicateStartTick: 0
+  _lastOrderedReplicatedTick: 0
+  _lastReadReplicateTick: 0
+  _lastReadReconcileRemoteTick: 0
+  _lastReconcileTick: 0
+  _lastTransformPosition: {x: 0, y: 0, z: 0}
+  _lastTransformRotation: {x: 0, y: 0, z: 0, w: 0}
+  _lastTransformScale: {x: 0, y: 0, z: 0}
+  _usesPrediction: 0
+  _rpcMethodCount: 0
+  _rpcHashSize: 1
+  SyncTypeDirty: 0
 --- !u!1 &935946996
 GameObject:
   m_ObjectHideFlags: 0
@@ -21289,8 +21325,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95ac93688671a8e4a840d5642a0e44e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainMenuPanel: {fileID: 453000222}
-  waitingPanel: {fileID: 1510637401}
 --- !u!1 &983141080
 GameObject:
   m_ObjectHideFlags: 0
@@ -27038,6 +27072,9 @@ MonoBehaviour:
   - {fileID: 1612231849}
   - {fileID: 649833543}
   continueButton: {fileID: 2092005203}
+  selectedRole: 
+  localPlayer: {fileID: 0}
+  networkManager: {fileID: 0}
   stationText: {fileID: 0}
   waitingScreen: {fileID: 604397839}
   roleSelectionScreen: {fileID: 1258819935}
@@ -44144,10 +44181,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26b716c41e9b56b4baafaf13a523ba2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _onStartServerCalled: 0
+  _onStartClientCalled: 0
   <IsNested>k__BackingField: 0
   WasActiveDuringEdit: 1
   WasActiveDuringEdit_Set1: 1
   <ComponentIndex>k__BackingField: 0
+  <ObjectId>k__BackingField: 65535
+  <IsDeinitializing>k__BackingField: 1
   <PredictedSpawn>k__BackingField: {fileID: 0}
   <PredictedOwner>k__BackingField: {fileID: 0}
   NetworkBehaviours:
@@ -44162,8 +44203,18 @@ MonoBehaviour:
   _initializeOrder: 0
   _preventDespawnOnDisconnect: 0
   _defaultDespawnType: 0
+  _disabledNetworkBehavioursInitialized: 0
   _initializedTimestamp: -8584358160183500758
   NetworkObserver: {fileID: 0}
+  ObserverAddedTick: 0
+  _networkObserverInitiliazed: 0
+  _renderersPopulated: 0
+  _lastClientHostVisibility: 0
+  _hashGrid: {fileID: 0}
+  _nextHashGridUpdateTime: 0
+  _isStatic: 0
+  _hashGridPosition: {x: 2147483647, y: 2147483647}
+  <IsObjectReconciling>k__BackingField: 0
   _enablePrediction: 0
   _predictionType: 0
   _graphicalObject: {fileID: 0}
@@ -44177,6 +44228,20 @@ MonoBehaviour:
   _spectatorInterpolation: 2
   _enableTeleport: 0
   _teleportThreshold: 1
+  _predictionBehaviours: []
+  <IsDestroying>k__BackingField: 0
+  <IsClientInitialized>k__BackingField: 0
+  <IsServerInitialized>k__BackingField: 0
+  <NetworkManager>k__BackingField: {fileID: 0}
+  <ServerManager>k__BackingField: {fileID: 0}
+  <ClientManager>k__BackingField: {fileID: 0}
+  <ObserverManager>k__BackingField: {fileID: 0}
+  <TransportManager>k__BackingField: {fileID: 0}
+  <TimeManager>k__BackingField: {fileID: 0}
+  <SceneManager>k__BackingField: {fileID: 0}
+  <PredictionManager>k__BackingField: {fileID: 0}
+  <RollbackManager>k__BackingField: {fileID: 0}
+  _rpcLinkIndexes: []
   <PrefabId>k__BackingField: 0
   <SpawnableCollectionId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 494045362314552733
@@ -49551,9 +49616,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7742e9a41fb176c459af90201429b1e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <OnStartServerCalled>k__BackingField: 0
+  <OnStartClientCalled>k__BackingField: 0
+  _onStartNetworkCalled: 0
+  _onStopNetworkCalled: 0
   _componentIndexCache: 0
   _addedNetworkObject: {fileID: 540128218}
+  _transportManagerCache: {fileID: 0}
   _networkObjectCache: {fileID: 368294509362559868}
+  _initializedOnceServer: 0
+  _initializedOnceClient: 0
+  _networkTrafficStatistics:
+    _enableMode: 0
+    _updateClient: 0
+    _updateServer: 0
+    _networkManager: {fileID: 0}
+    _initializedOnce: 0
+  _typeName: 
+  <IsBehaviourReconciling>k__BackingField: 0
+  _remainingReplicateResends: 0
+  _remainingReconcileResends: 0
+  _lastReplicateReadRemoteTick: 0
+  _replicateStartTick: 0
+  _lastOrderedReplicatedTick: 0
+  _lastReadReplicateTick: 0
+  _lastReadReconcileRemoteTick: 0
+  _lastReconcileTick: 0
+  _lastTransformPosition: {x: 0, y: 0, z: 0}
+  _lastTransformRotation: {x: 0, y: 0, z: 0, w: 0}
+  _lastTransformScale: {x: 0, y: 0, z: 0}
+  _usesPrediction: 0
+  _rpcMethodCount: 0
+  _rpcHashSize: 1
+  SyncTypeDirty: 0
 --- !u!1 &2780392434295573656
 GameObject:
   m_ObjectHideFlags: 0
@@ -65105,7 +65200,6 @@ SceneRoots:
   - {fileID: 1238461411}
   - {fileID: 348530999}
   - {fileID: 192182283}
-  - {fileID: 595520899}
   - {fileID: 487930252}
   - {fileID: 5634534306143873194}
   - {fileID: 1036884706}
