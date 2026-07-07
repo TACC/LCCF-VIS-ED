@@ -102,30 +102,6 @@ IEndDragHandler, IDragHandler/*, IDropHandler*/
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        //Old (mine)
-        // Called when the drag operation ends
-        // print("End Drag");
-        // canvasGroup.blocksRaycasts = true; // Optional: Re-enable raycast blocking after dragging
-        
-        // //Old (mine)
-        // if (RectTransformUtility.RectangleContainsScreenPoint(targetArea, eventData.position, eventData.pressEventCamera))
-        // {
-        //     wasDroppedOnTarget = true;
-        // }
-        // //POSSIBLY CONDENSE THESE TWO STATEMENTS
-        // if (wasDroppedOnTarget /*&& transform.parent == dragLayer*/) //Setting back to original rect (PROBLEM)
-        // {
-        //     //Check to see if slot is full
-        //     //if full, move on, if empty stay
-
-        //     transform.SetParent(slots[slotInc.slotNum]);
-        //     slotInc.slotInc();
-        //     rectTransform.anchoredPosition = Vector2.zero;
-        // }
-
-        //If object is not placed on ticket return to pool
-
-
        //New (With parts by ChatGPT)
         print("End Drag");
 
@@ -226,10 +202,6 @@ IEndDragHandler, IDragHandler/*, IDropHandler*/
             slotDrops[i + 1].SetActive(false);
             slotDrops[i].SetActive(true);
 
-            //Update the orderTicketUI for the moved item
-            //orderTicketUI.SetRowVisible(orderTicketUI.ingredientDropdowns[i], true);
-            //orderTicketUI.SetRowEditable(orderTicketUI.ingredientDropdowns[i], true);
-
             // Claude *
             bool wasLocked = orderTicketUI.isSlotLocked(i + 1);
             orderTicketUI.SetSlotLocked(i + 1, false);
@@ -265,6 +237,7 @@ IEndDragHandler, IDragHandler/*, IDropHandler*/
 
     }
 
+    //Claude
     public void ResetToPool()
     {
         thisSlotNum = -1;

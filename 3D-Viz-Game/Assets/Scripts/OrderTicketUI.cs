@@ -679,6 +679,7 @@ public class OrderTicketUI : MonoBehaviour
         return pair.dropdown.value;
     }
 
+    //Claude
     public void SetDropdownIndex(int index, int dropdownIndex)
     {
         if (index < 0 || index >= ingredientDropdowns.Count) return;
@@ -692,6 +693,8 @@ public class OrderTicketUI : MonoBehaviour
         pair.dropdown.RefreshShownValue();
     }
 
+
+    //Claude
     public void HideRows()
     {
         foreach (var pair in ingredientDropdowns)
