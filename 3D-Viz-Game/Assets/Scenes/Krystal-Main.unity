@@ -1503,51 +1503,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 142824920}
   m_CullTransparentMesh: 1
---- !u!1 &164901173
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 164901175}
-  - component: {fileID: 164901174}
-  m_Layer: 0
-  m_Name: MultiDisplayBootstrap
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &164901174
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 164901173}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1c928ba31b5e1a4eb80f4f394cf1e24, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetDisplayCount: 4
---- !u!4 &164901175
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 164901173}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 68.77351, y: 9.19893, z: -39.93662}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &171535604
 GameObject:
   m_ObjectHideFlags: 0
@@ -23808,7 +23763,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 925625512095876818}
-  - component: {fileID: 5586914146301530812}
   m_Layer: 0
   m_Name: 3DSortingGame
   m_TagString: Untagged
@@ -23816,21 +23770,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &5586914146301530812
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5586914146301530811}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49896bb36333fab48a6250b7eaef8597, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetDisplay: 0
-  stationCamera: {fileID: 0}
-  stationCanvas: {fileID: 0}
 --- !u!4 &5605680229875623175
 Transform:
   m_ObjectHideFlags: 0
