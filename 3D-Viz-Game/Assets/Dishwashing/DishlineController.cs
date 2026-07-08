@@ -41,7 +41,7 @@ public class DishlineController : MonoBehaviour
     public AnimationCurve ease = null;
     public float arcHeight = 0.12f;
 
-    public bool firstPara; //first time pressing summons 3 plates instantly
+    public bool secondPlay; //Second Play through start with 6 slots
     public event System.Action<PlateController> OnPlateStacked;  // notify when plate is stacked on the right
     public int CleanCount => cleanCount;
 
@@ -125,10 +125,10 @@ public class DishlineController : MonoBehaviour
     void TryFillWorkSlots()
     {
         int freeSlot = -1;
-        if (firstPara)
+        if (secondPlay)
         {
             if (activeSlots != 6) activeSlots = 6;
-            firstPara = false;
+            secondPlay = false;
             for (int i = 3; i < activeSlots; i++)
             {
                 if (active[i] == null)

@@ -21,6 +21,7 @@ public class DirtSpot : MonoBehaviour
         var brushes = BrushManager.ActiveBrushes;
         bool shouldFade = false;
 
+
         for (int i = 0; i < brushes.Count; i++)
         {
             var b = brushes[i];

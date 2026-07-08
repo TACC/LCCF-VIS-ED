@@ -8,6 +8,7 @@ public class DishGameManager : MonoBehaviour
     [Header("Refs")]
     public DishlineController dishline;
     public GameObject parallelize;  //parallelize button itself
+    public BrushManager brushes;
 
     [Header("Round")]
     public float roundDuration = 20f;
@@ -26,6 +27,7 @@ public class DishGameManager : MonoBehaviour
     int score;       // number of plates cleaned
     bool running;
     bool continueRound; //if the game should continue, for 2nd playthrough
+    bool parallelized;
 
     void Start()
     {
@@ -33,6 +35,7 @@ public class DishGameManager : MonoBehaviour
         HideResults();
         StartRound();
         continueRound = false;
+        parallelized = false;
         score = 0;
     }
 
@@ -69,8 +72,8 @@ public class DishGameManager : MonoBehaviour
 
     public void ParaButton()
     {
-        dishline.activeSlots = 6;
-        dishline.firstPara = true;
+        parallelized = true;
+        brushes.addBrushes();
         parallelize.SetActive(false);
     }
 
@@ -91,7 +94,7 @@ public class DishGameManager : MonoBehaviour
             StartRound();
         }
 
-        if (score >= 5)
+        if (score >= 5 && !parallelized)
         {
             parallelize.SetActive(true);
         }

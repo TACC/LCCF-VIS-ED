@@ -2036,7 +2036,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dishline: {fileID: 1795035488}
   parallelize: {fileID: 363519650}
-  roundDuration: 20
+  roundDuration: 40
   timerText: {fileID: 974922640}
   scoreText: {fileID: 0}
   resultsPanel: {fileID: 0}
@@ -4301,7 +4301,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -285, y: -175}
+  m_AnchoredPosition: {x: 285, y: -175}
   m_SizeDelta: {x: 160, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &363519652
@@ -17824,7 +17824,7 @@ MonoBehaviour:
   autoStart: 0
   dirtyAnchor: {fileID: 1601675618}
   dirtySpacingLocal: {x: 0, y: 0.6, z: 0}
-  maxQueue: 6
+  maxQueue: 12
   spawnEvery: {x: 2, y: 6}
   minRackDwellSeconds: 0.35
   workSlots:
@@ -17835,7 +17835,7 @@ MonoBehaviour:
   - {fileID: 326769782}
   - {fileID: 533762332}
   toWorkDuration: 0.25
-  isPara: 0
+  activeSlots: 3
   cleanAnchor: {fileID: 179257170}
   cleanSpacingLocal: {x: 0, y: 0.03, z: 0}
   toCleanDuration: 0.55
@@ -17864,6 +17864,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   arcHeight: 0.12
+  firstPara: 0
 --- !u!4 &1795035489
 Transform:
   m_ObjectHideFlags: 0
@@ -19827,7 +19828,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Try cleaning faster by adding more plates!
+  m_text: Try cleaning faster by adding more sponges!
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
