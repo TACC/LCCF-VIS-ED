@@ -8,6 +8,9 @@ public class WashBrush : MonoBehaviour
     public Transform visual;
     public float visualLift = 0.001f;
 
+    //adding new brushes
+    public Vector2 newBrushOffset { get; set; }
+
     // debug (optional)
     public bool LastHitPlate { get; private set; }
     public string LastHitName { get; private set; }

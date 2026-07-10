@@ -1,11 +1,14 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using Unity.VisualScripting;
 
 public class DishGameManager : MonoBehaviour
 {
     [Header("Refs")]
     public DishlineController dishline;
+    public GameObject parallelize;  //parallelize button itself
+    public BrushManager brushes;
 
     [Header("Round")]
     public float roundDuration = 20f;
@@ -23,12 +26,17 @@ public class DishGameManager : MonoBehaviour
     float timeLeft;
     int score;       // number of plates cleaned
     bool running;
+    bool continueRound; //if the game should continue, for 2nd playthrough
+    bool parallelized;
 
     void Start()
     {
         if (!dishline) dishline = Object.FindAnyObjectByType<DishlineController>();
         HideResults();
         StartRound();
+        continueRound = false;
+        parallelized = false;
+        score = 0;
     }
 
     public void StartRound()
@@ -37,6 +45,7 @@ public class DishGameManager : MonoBehaviour
         score = 0;
         running = true;
 
+        parallelize.SetActive(false);
         if (dishline)
         {
             dishline.OnPlateStacked += HandlePlateStacked;
@@ -57,13 +66,20 @@ public class DishGameManager : MonoBehaviour
             dishline.OnPlateStacked -= HandlePlateStacked;
             dishline.StopSpawning();
         }
-
+        Debug.Log("round over");
         ShowResults();
+    }
+
+    public void ParaButton()
+    {
+        parallelized = true;
+        brushes.addBrushes();
+        parallelize.SetActive(false);
     }
 
     void Update()
     {
-        if (!running) return;
+        //if (!running) return;
 
         timeLeft -= Time.deltaTime;
         if (timeLeft <= 0f)
@@ -71,6 +87,18 @@ public class DishGameManager : MonoBehaviour
             timeLeft = 0f;
             EndRound();
         }
+
+        if (continueRound && !running)
+        {
+            continueRound = false;
+            StartRound();
+        }
+
+        if (score >= 5 && !parallelized)
+        {
+            parallelize.SetActive(true);
+        }
+
         UpdateHUD();
     }
 
@@ -99,7 +127,9 @@ public class DishGameManager : MonoBehaviour
         // time used is (roundDuration - timeLeft)
         int timeUsed = Mathf.RoundToInt(roundDuration - timeLeft);
         if (resultsBodyText)
+        {
             resultsBodyText.text = $"Plates cleaned: {score}\nTime used: {FormatTime(timeUsed)}";
+        }
 
         if (resultsCloseButton)
         {

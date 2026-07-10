@@ -15,18 +15,23 @@ public class BrushManager : MonoBehaviour
 
 
     [Header("Brush")]
-    // small visual to see where we are pointing, will change to small sponge later maybe?
     public WashBrush brushPrefab;
+    private int brushNum = 1; //number of brushes for an input
+    private float brushOffset = 2.5f; //space between new brushes, should be going to left: fingerb - - - newb
 
     // active brushes by pointer id, EnhancedTouch fingerId, or -1 for mouse
-    readonly Dictionary<int, WashBrush> _brushes = new Dictionary<int, WashBrush>();
+    readonly Dictionary<int, List<WashBrush>> _brushes = new Dictionary<int, List<WashBrush>>();
     static List<WashBrush> _cache = new List<WashBrush>();
     public static IReadOnlyList<WashBrush> ActiveBrushes
     {
         get
         {
             _cache.Clear();
-            if (_instance != null) _cache.AddRange(_instance._brushes.Values);
+            if (_instance != null)
+            {
+                foreach (var list in _instance._brushes.Values)
+                    _cache.AddRange(list);
+            }
             return _cache;
         }
     }
@@ -47,6 +52,33 @@ public class BrushManager : MonoBehaviour
         ETouch.EnhancedTouchSupport.Disable();
     }
 
+    //used for adding brushes for parallelize.
+    public void addBrushes()
+    {
+        if (brushNum < 3)
+        {
+            brushNum++;
+            foreach (int id in _brushes.Keys)
+            {
+                addBrush(id);
+            }
+        }
+    }
+
+    private void addBrush(int id)
+    {
+        var list = GetOrCreate(id);
+        var go = Instantiate(brushPrefab.gameObject, transform);
+        var brush = go.GetComponent<WashBrush>();
+        brush.newBrushOffset = ComputeOffset(list.Count);
+        list.Add(brush);
+    }
+
+    Vector2 ComputeOffset(int index)
+    {
+        return new Vector2(-index * brushOffset, 0f);
+    }
+
     void Update()
     {
         if (!inputEnabled)
@@ -54,7 +86,8 @@ public class BrushManager : MonoBehaviour
             // prevent scrubbing and also clear existing brushes so DirtSpot sees none
             if (_brushes.Count > 0)
             {
-                foreach (var kv in _brushes) if (kv.Value) Destroy(kv.Value.gameObject);
+                foreach (var kv in _brushes)
+                { foreach (var brush in kv.Value) if (brush) Destroy(brush.gameObject); }
                 _brushes.Clear();
             }
             return;
@@ -63,14 +96,20 @@ public class BrushManager : MonoBehaviour
         {
             Vector2 mpos = Mouse.current.position.ReadValue();
             bool mpressed = Mouse.current.leftButton.isPressed;
-            var b = GetOrCreate(MouseId);
+            List<WashBrush> bList = GetOrCreate(MouseId);
             Ray ray = cam.ScreenPointToRay(mpos);
 
             if (Physics.Raycast(ray, out var hit, rayMaxDistance, plateLayer))
             {
                 var plate = hit.collider.GetComponentInParent<PlateController>();
                 if (plate != null)
-                    b.UpdateFromPointer(cam, plate, surfaceOffset, mpos, mpressed);
+                    foreach (var brush in bList)
+                    {
+                        brush.UpdateFromPointer(cam, plate, surfaceOffset, mpos, mpressed);
+                        brush.transform.position += plate.transform.right * brush.newBrushOffset.x
+                                                   + plate.transform.up * brush.newBrushOffset.y;
+                    }
+
             }
         }
 
@@ -86,14 +125,21 @@ public class BrushManager : MonoBehaviour
                         || t.phase == UnityEngine.InputSystem.TouchPhase.Moved
                         || t.phase == UnityEngine.InputSystem.TouchPhase.Stationary;
 
-            var b = GetOrCreate(id);
+            List<WashBrush> bList = GetOrCreate(id);
             Ray ray = cam.ScreenPointToRay(t.screenPosition);
 
             if (Physics.Raycast(ray, out var hit, rayMaxDistance, plateLayer))
             {
                 var plate = hit.collider.GetComponentInParent<PlateController>();
                 if (plate != null)
-                    b.UpdateFromPointer(cam, plate, surfaceOffset, t.screenPosition, pressed);
+                {
+                    foreach (var brush in bList)
+                    {
+                        brush.UpdateFromPointer(cam, plate, surfaceOffset, t.screenPosition, pressed);
+                        brush.transform.position += plate.transform.right * brush.newBrushOffset.x
+                                                   + plate.transform.up * brush.newBrushOffset.y;
+                    }
+                }
             }
         }
 
@@ -106,22 +152,32 @@ public class BrushManager : MonoBehaviour
         }
         foreach (var id in toRemove)
         {
-            Destroy(_brushes[id].gameObject);
+            List<WashBrush> brushes = _brushes[id];
+            foreach (var brush in brushes)
+            {
+                Destroy(brush.gameObject);
+            }
             _brushes.Remove(id);
         }
         ListPool<int>.Release(toRemove);
         HashSetPool<int>.Release(seenIds);
     }
 
-    WashBrush GetOrCreate(int id)
+    List<WashBrush> GetOrCreate(int id)
     {
-        if (_brushes.TryGetValue(id, out var b) && b != null)
-            return b;
+        if (_brushes.TryGetValue(id, out var list) && list != null && list.Count > 0)
+            return list;
 
-        var go = Instantiate(brushPrefab.gameObject, transform);
-        b = go.GetComponent<WashBrush>();
-        _brushes[id] = b;
-        return b;
+        list = new List<WashBrush>();
+        _brushes[id] = list;
+        for (int i = 0; i < brushNum; i++)
+        {
+            var go = Instantiate(brushPrefab.gameObject, transform);
+            var brush = go.GetComponent<WashBrush>();
+            brush.newBrushOffset = ComputeOffset(i);
+            list.Add(brush);
+        }
+        return list;
     }
 }
 
