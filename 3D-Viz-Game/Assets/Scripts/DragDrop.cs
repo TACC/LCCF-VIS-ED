@@ -71,8 +71,6 @@ IEndDragHandler, IDragHandler/*, IDropHandler*/
         transform.SetParent(dragLayer, true);
         transform.SetAsLastSibling();
 
-        
-        //gameObject.AddComponent<GraphicRaycaster>(); // Add a GraphicRaycaster to the dragged object
 
         canvasGroup.blocksRaycasts = false; // Optional: Disable raycast blocking to allow drop targets to receive events
     }
@@ -87,8 +85,6 @@ IEndDragHandler, IDragHandler/*, IDropHandler*/
     public void OnDrag(PointerEventData eventData)
     {
         // Called while the object is being dragged
-        //print("Dragging");
-        //rectTransform.anchoredPosition += eventData.delta / canvas.scaleFactor;
         if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
             rectTransform.parent as RectTransform,
             eventData.position,
@@ -202,7 +198,7 @@ IEndDragHandler, IDragHandler/*, IDropHandler*/
             slotDrops[i + 1].SetActive(false);
             slotDrops[i].SetActive(true);
 
-            // Claude *
+            // Claude 
             bool wasLocked = orderTicketUI.isSlotLocked(i + 1);
             orderTicketUI.SetSlotLocked(i + 1, false);
             orderTicketUI.SetSlotLocked(i, wasLocked);
@@ -217,7 +213,7 @@ IEndDragHandler, IDragHandler/*, IDropHandler*/
                 orderTicketUI.SetRowVisible(orderTicketUI.ingredientDropdowns[i], true);
                 orderTicketUI.SetRowEditable(orderTicketUI.ingredientDropdowns[i], true);
             }
-            // *
+            // End Claude
 
             //Register the moved item in the new slot
             orderTicketUI.RegisterDrop(i, orderTicketUI.getDropValue(i + 1));

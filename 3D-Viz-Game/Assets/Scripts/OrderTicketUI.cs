@@ -144,9 +144,6 @@ public class OrderTicketUI : MonoBehaviour
             pair.dropdown.value = 0;                    // start on blank
             pair.dropdown.RefreshShownValue();
 
-            //SET THESE IN DragDrop
-            //SetRowVisible(pair, true);
-            //SetRowEditable(pair, true);
         }
         
 
@@ -320,10 +317,12 @@ public class OrderTicketUI : MonoBehaviour
             if (matchedSlot == -1 && !pair.ingredientName.ToLower().Contains("bun"))
             {
                 anyIncorrect = true;
-                // SetRowVisible(pair, true);
-                // SetRowVisible(pair, true);
                 string missingName = string.IsNullOrEmpty(pair.ingredientName) ? "an ingredient" : pair.ingredientName;
                 print("first");
+                if (pair.ingredientName.ToLower().Contains("cheese"))
+                {
+                    print("WTH");
+                }
                 corrections.Add($"You forgot to add <color=red><b>{missingName} ({correct})</b></color=red>");
                 continue;
             }
@@ -457,11 +456,6 @@ public class OrderTicketUI : MonoBehaviour
                     print (correct + "d"); //g, oz, none
                     if (name.ToLower().Contains("bun"))
                     {
-                        // if (correct.Contains("10")) name = "Small Bun (10g)";
-                        // else if (correct.Contains("20")) name = "Medium Bun (20g)";
-                        // else if (correct.Contains("30")) name = "Large Bun (30g)";
-                        //name = "Bun"
-                       
                         corrections.Add($"The bun should be in {correct}."); //IRRELEVENT
                     }
                     else
@@ -709,5 +703,7 @@ public class OrderTicketUI : MonoBehaviour
             }
         }
     }
+
+    
 
 }

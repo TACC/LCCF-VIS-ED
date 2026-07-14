@@ -120,6 +120,7 @@ public class NPCOrderManager_Single : MonoBehaviour
 
         var mediumBunIng = ingredients[6];
         var largeBunIng = ingredients[7];
+
         int bunRoll = Random.Range(0, 3);
         ingredients[0].name = bunRoll == 0 ? "Small Bun" : bunRoll == 1 ? "Medium Bun" : "Large Bun";
         ingredients[0].assignedValue = bunRoll == 0 ? smallBun : bunRoll == 1 ? mediumBun : largeBun;
@@ -159,8 +160,6 @@ public class NPCOrderManager_Single : MonoBehaviour
                 if (!bunChosen)
                     {
                         bunChosen = true;
-                        // ingredient.assignedValue = ingredient.name.ToLower().Contains("small") ? smallBun :
-                        //                 ingredient.name.ToLower().Contains("medium") ? mediumBun : largeBun;
                         string line = $"I'll take a {ingredient.name} ({ingredient.assignedValue}{ingredient.unit}).";
                         npcOrderLines.Add(line);
                         correctValues.Add($"{ingredient.assignedValue}{ingredient.unit}");
