@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2067574531048621760}
   - component: {fileID: 7487387480331276054}
   - component: {fileID: 4970800506843590816}
+  - component: {fileID: 3790413576147113466}
   - component: {fileID: 6389681611587777390}
   m_Layer: 0
   m_Name: KitchenCam
@@ -139,6 +140,21 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!114 &3790413576147113466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 52020409489793339}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49896bb36333fab48a6250b7eaef8597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetDisplay: 1
+  stationCamera: {fileID: 2067574531048621760}
+  stationCanvas: {fileID: 5486002850789648819}
 --- !u!114 &6389681611587777390
 MonoBehaviour:
   m_ObjectHideFlags: 0
