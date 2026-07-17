@@ -13,6 +13,7 @@ public class NPCOrderManager : MonoBehaviour
         public string unit;
         [HideInInspector] public int assignedValue;
     }
+    
 
     [Header("Ingredient Setup")]
     public List<Ingredient> ingredients = new List<Ingredient>();
@@ -50,6 +51,7 @@ public class NPCOrderManager : MonoBehaviour
 
             // Collect correct value+unit for the dropdown
             correctValues.Add($"{ingredient.assignedValue}{ingredient.unit}");
+            
         }
 
         ShuffleList(npcOrderLines);

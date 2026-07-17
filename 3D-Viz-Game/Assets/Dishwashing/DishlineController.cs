@@ -18,15 +18,16 @@ public class DishlineController : MonoBehaviour
     public int maxQueue = 8;
     // how often they spawn in the rack
     public Vector2 spawnEvery = new Vector2(1.5f, 4f);
-    public float minRackDwellSeconds = 0.35f;
+    public float minRackDwellSeconds = 0.1f;
 
     struct QueueItem { public PlateController plate; public float timeIn; }
     readonly Queue<QueueItem> dirtyQueue = new Queue<QueueItem>();
 
-    [Header("Middle: Work area (max 3)")]
-    public Transform[] workSlots = new Transform[3];
+    [Header("Middle: Work area (max 3 if not parallelized)")]
+    public Transform[] workSlots = new Transform[6];
     public float toWorkDuration = 0.5f;
-    readonly PlateController[] active = new PlateController[3];
+    readonly PlateController[] active = new PlateController[6];
+    public int activeSlots = 3; //slots being active at the time
 
     [Header("Right: Clean stack")]
     public Transform cleanAnchor;
@@ -40,6 +41,7 @@ public class DishlineController : MonoBehaviour
     public AnimationCurve ease = null;
     public float arcHeight = 0.12f;
 
+    public bool secondPlay; //Second Play through start with 6 slots
     public event System.Action<PlateController> OnPlateStacked;  // notify when plate is stacked on the right
     public int CleanCount => cleanCount;
 
@@ -53,11 +55,17 @@ public class DishlineController : MonoBehaviour
         if (generatorCo != null) { StopCoroutine(generatorCo); generatorCo = null; }
     }
 
+    //clear all dishes when a round ends
+    public void clearAllDishes()
+    {
+
+    }
+
     Coroutine generatorCo;
 
     void OnValidate()
     {
-        if (workSlots == null || workSlots.Length != 3) workSlots = new Transform[3];
+        if (workSlots == null || workSlots.Length != 6) workSlots = new Transform[6];
         if (ease == null || ease.length < 2) ease = AnimationCurve.EaseInOut(0, 0, 1, 1);
         if (spawnEvery.x < 0.05f) spawnEvery.x = 0.05f;
         if (spawnEvery.y < spawnEvery.x) spawnEvery.y = spawnEvery.x;
@@ -68,7 +76,7 @@ public class DishlineController : MonoBehaviour
         if (!platePrefab) { Debug.LogError("[Dishline] Plate Prefab is not assigned."); return; }
         if (!dirtyAnchor) { Debug.LogError("[Dishline] Dirty Anchor not assigned."); return; }
         if (!cleanAnchor) { Debug.LogError("[Dishline] Clean Anchor not assigned."); return; }
-        for (int i = 0; i < 3; i++) if (!workSlots[i]) { Debug.LogError($"[Dishline] WorkSlot_{i} not assigned."); return; }
+        for (int i = 0; i < 6; i++) if (!workSlots[i]) { Debug.LogError($"[Dishline] WorkSlot_{i} not assigned."); return; }
 
         if (autoStart)
             generatorCo = StartCoroutine(DirtyGenerator());
@@ -117,7 +125,22 @@ public class DishlineController : MonoBehaviour
     void TryFillWorkSlots()
     {
         int freeSlot = -1;
-        for (int i = 0; i < active.Length; i++)
+        if (secondPlay)
+        {
+            if (activeSlots != 6) activeSlots = 6;
+            secondPlay = false;
+            for (int i = 3; i < activeSlots; i++)
+            {
+                if (active[i] == null)
+                {
+                    var instantFillPlate = Instantiate(platePrefab, dirtyAnchor.position, dirtyAnchor.rotation, transform);
+                    instantFillPlate.RespawnDirt();
+                    instantFillPlate.OnCleaned += HandlePlateCleaned;
+                    dirtyQueue.Enqueue(new QueueItem { plate = instantFillPlate, timeIn = Time.time });
+                }
+            }
+        }
+        for (int i = 0; i < activeSlots; i++)
             if (active[i] == null) { freeSlot = i; break; }
         if (freeSlot == -1) return;
         if (dirtyQueue.Count == 0) return;

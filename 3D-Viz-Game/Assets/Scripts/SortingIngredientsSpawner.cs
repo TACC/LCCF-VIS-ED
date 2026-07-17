@@ -17,6 +17,8 @@ public class SortingIngredientSpawner : MonoBehaviour
 
     [Header("Integrations")]
     public ConveyorManager3D conveyor;          // optional cap to slots
+    [Header("Station Camera")]
+    [SerializeField] private Camera stationCamera;
 
     [Header("Entry Tween")]
     public float arriveDuration = 0.45f;
@@ -115,6 +117,7 @@ public class SortingIngredientSpawner : MonoBehaviour
             {
                 dh.ingredientValue = values[i];
                 dh.SetSpawnPoint(arrive);
+                dh.SetDragCamera(stationCamera); // added to ensure the DragHandler3D knows which camera to use for raycasting
                 if (setDragModeToSorting) dh.mode = DragHandler3D.DragMode.Sorting;
             }
 
