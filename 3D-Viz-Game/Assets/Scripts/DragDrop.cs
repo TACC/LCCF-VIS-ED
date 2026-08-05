@@ -19,6 +19,10 @@ IEndDragHandler, IDragHandler/*, IDropHandler*/
     [SerializeField] private Transform[] slots;
 
     [SerializeField] private GameObject[] slotDrops;
+    [SerializeField] private GameObject[] slotDropsP2;
+
+    public enum DragTargetGroup { Phase1Ingredient, Phase2Ingredient }
+    [SerializeField] private DragTargetGroup targetGroup = DragTargetGroup.Phase1Ingredient;
 
     public string ingredientName;
     public string itemValue;
@@ -41,7 +45,7 @@ IEndDragHandler, IDragHandler/*, IDropHandler*/
         // dragCanvas = GetComponent<Canvas>();
         //dragCanvas.overrideSorting = true;
     }
-    public void OnBeginDrag(PointerEventData eventData)
+    public void OnBeginDrag(PointerEventData eventData) //change for part 2
     {
         // Called when the drag operation starts
         print("Begin Drag");
@@ -49,17 +53,41 @@ IEndDragHandler, IDragHandler/*, IDropHandler*/
         //If the object is on ticket and dragging it off
         if (wasDroppedOnTarget)
         {
-            //set row visible to false and editable to false
-            orderTicketUI.SetRowVisible(orderTicketUI.ingredientDropdowns[thisSlotNum], false);
-            orderTicketUI.SetRowEditable(orderTicketUI.ingredientDropdowns[thisSlotNum], false);
+            print(thisSlotNum);
             
-            //Move everything up one (seperate method)
-            //Claude entry *
-            orderTicketUI.RegisterDrop(thisSlotNum, null);
-            orderTicketUI.RegisterDropName(thisSlotNum, null);
-            // *
+            //set row visible to false and editable to false
+            switch(targetGroup) //NOT SETTING TO FALSE
+            {
+                case DragTargetGroup.Phase2Ingredient:
+                    print("PLEASE");
+                    orderTicketUI.SetRowVisible(orderTicketUI.phase2ItemDropdowns[thisSlotNum], false);
+                    orderTicketUI.SetRowEditable(orderTicketUI.phase2ItemDropdowns[thisSlotNum], false);
+                    orderTicketUI.SetRowVisibleP2(orderTicketUI.dataTypeDropdowns[thisSlotNum], false);
+                    orderTicketUI.SetRowEditableP2(orderTicketUI.dataTypeDropdowns[thisSlotNum], false);
+                    orderTicketUI.RegisterDropUnit(thisSlotNum, null);
+                    orderTicketUI.RegisterDropUnitName(thisSlotNum, null);
+                    orderTicketUI.RegisterDropItemP2(thisSlotNum, null);
+                    orderTicketUI.RegisterDropItemNameP2(thisSlotNum, null);
+                    break;
+                default:
+                    print("PLEASE NUMBER ONE");
+                    orderTicketUI.SetRowVisible(orderTicketUI.ingredientDropdowns[thisSlotNum], false);
+                    orderTicketUI.SetRowEditable(orderTicketUI.ingredientDropdowns[thisSlotNum], false);
+                    orderTicketUI.RegisterDrop(thisSlotNum, null);
+                    orderTicketUI.RegisterDropName(thisSlotNum, null);
+                    break;
+            }
 
-            moveOnUp();
+            switch(targetGroup)
+            {
+                case DragTargetGroup.Phase2Ingredient:
+                    moveOnUpP2();
+                    break;
+                default:
+                    moveOnUp();
+                    break;
+            }
+
             //decrement slotInc
             slotInc.slotDec();
 
@@ -111,34 +139,90 @@ IEndDragHandler, IDragHandler/*, IDropHandler*/
 
         if (wasDroppedOnTarget)
         {
-            // Save the slot BEFORE incrementing
-            int currentSlot = slotInc.slotNum;
+            // // Save the slot BEFORE incrementing //My old code
+            // int currentSlot = slotInc.slotNum;
 
+            // thisSlotNum = currentSlot;
+
+            // // Snap into slot and then set dropdown active
+            // transform.SetParent(slots[currentSlot], true);
+            // rectTransform.anchoredPosition = Vector2.zero;
+
+            // slotDrops[currentSlot].SetActive(true);
+            // orderTicketUI.SetRowVisible(orderTicketUI.ingredientDropdowns[currentSlot], true);
+            // orderTicketUI.SetRowEditable(orderTicketUI.ingredientDropdowns[currentSlot], true);
+
+            // // Register this ingredient with the ticket
+            // if (orderTicketUI != null)
+            // {
+            //     orderTicketUI.RegisterDrop(currentSlot, itemValue);
+            //     orderTicketUI.RegisterDropName(currentSlot, ingredientName);
+
+            //     Debug.Log($"Registered {ingredientName} ({itemValue}) in slot {currentSlot}");
+            // }
+            // else
+            // {
+            //     Debug.LogWarning("OrderTicketUI reference is missing!");
+            // }
+
+            // // Move to the next slot
+            // slotInc.slotInc();
+
+            Transform[] activeSlots;
+            GameObject[] activeSlotDrops;
+
+            switch (targetGroup) //take out redundency
+            {
+                case DragTargetGroup.Phase2Ingredient:
+                    activeSlots = slots;
+                    activeSlotDrops = slotDropsP2;
+                    break;
+                default:
+                    activeSlots = slots;
+                    activeSlotDrops = slotDrops;
+                    break;
+            }
+
+            int currentSlot = slotInc.slotNum;
             thisSlotNum = currentSlot;
 
-            // Snap into slot and then set dropdown active
-            transform.SetParent(slots[currentSlot], true);
+            
+            transform.SetParent(activeSlots[currentSlot], true);
             rectTransform.anchoredPosition = Vector2.zero;
+            slotInc.slotInc();
+            
+            activeSlotDrops[currentSlot].SetActive(true);
+            if (targetGroup == DragTargetGroup.Phase2Ingredient)
+            {
+                slotDrops[currentSlot].SetActive(true);
+            }
 
-            slotDrops[currentSlot].SetActive(true);
-            orderTicketUI.SetRowVisible(orderTicketUI.ingredientDropdowns[currentSlot], true);
-            orderTicketUI.SetRowEditable(orderTicketUI.ingredientDropdowns[currentSlot], true);
-
-            // Register this ingredient with the ticket
             if (orderTicketUI != null)
             {
-                orderTicketUI.RegisterDrop(currentSlot, itemValue);
-                orderTicketUI.RegisterDropName(currentSlot, ingredientName);
-
-                Debug.Log($"Registered {ingredientName} ({itemValue}) in slot {currentSlot}");
+                switch (targetGroup) //Should be Just Phase2Item and default
+                {
+                    case DragTargetGroup.Phase2Ingredient:
+                        //Item data type
+                        orderTicketUI.SetRowVisibleP2(orderTicketUI.dataTypeDropdowns[currentSlot],true);
+                        orderTicketUI.SetRowEditableP2(orderTicketUI.dataTypeDropdowns[currentSlot],true);
+                        orderTicketUI.RegisterDropUnit(currentSlot, itemValue);
+                        orderTicketUI.RegisterDropUnitName(currentSlot, ingredientName);
+                        //Item value
+                        orderTicketUI.SetRowVisible(orderTicketUI.phase2ItemDropdowns[currentSlot], true);
+                        orderTicketUI.SetRowEditable(orderTicketUI.phase2ItemDropdowns[currentSlot], true);
+                        orderTicketUI.RegisterDropItemP2(currentSlot, itemValue);
+                        orderTicketUI.RegisterDropItemNameP2(currentSlot, ingredientName);
+                        break;
+                    default:
+                        orderTicketUI.SetRowVisible(orderTicketUI.ingredientDropdowns[currentSlot], true);
+                        orderTicketUI.SetRowEditable(orderTicketUI.ingredientDropdowns[currentSlot], true);
+                        orderTicketUI.RegisterDrop(currentSlot, itemValue);
+                        orderTicketUI.RegisterDropName(currentSlot, ingredientName);
+                        break;
+                }
             }
-            else
-            {
-                Debug.LogWarning("OrderTicketUI reference is missing!");
-            }
-
-            // Move to the next slot
-            slotInc.slotInc();
+            
+            
         }
         else
         {
@@ -167,7 +251,7 @@ IEndDragHandler, IDragHandler/*, IDropHandler*/
 
     //Will move each item up one slot when an item is removed from the ticket (Unless it is the last item)
     //Later edited with claude
-    private void moveOnUp()
+    private void moveOnUp() //Change for part 2
     {
 
         int lastFilledIndex = thisSlotNum;
@@ -245,6 +329,78 @@ IEndDragHandler, IDragHandler/*, IDropHandler*/
         {
             canvasGroup.blocksRaycasts = true;
         }
+    }
+
+    //TESTING WITH CLAUDE (NOT MINE)
+    private void moveOnUpP2()
+    {
+        print("MOVEONUP2");
+        int lastFilledIndex = thisSlotNum;
+
+        for (int i = thisSlotNum; i < slotInc.slotNum - 1; i++)
+        {
+            if (slots[i + 1].childCount == 0) break;
+
+            Transform itemToMove = slots[i + 1].GetChild(0);
+            DragDrop movedDragDrop = itemToMove.GetComponent<DragDrop>();
+
+            itemToMove.SetParent(slots[i], true);
+            RectTransform movedRect = itemToMove.GetComponent<RectTransform>();
+            if (movedRect) movedRect.anchoredPosition = Vector2.zero;
+
+            if (movedDragDrop) movedDragDrop.thisSlotNum = i;
+
+            // Carry both the unit dropdown and item dropdown selections up together
+            int carriedUnitIndex = orderTicketUI.GetSelectedIndexDataType(i + 1);
+            orderTicketUI.SetDropdownIndexDataType(i, carriedUnitIndex);
+            orderTicketUI.SetDropdownIndexDataType(i + 1, 0);
+
+            int carriedItemIndex = orderTicketUI.GetSelectedIndexP2Item(i + 1);
+            orderTicketUI.SetDropdownIndexP2Item(i, carriedItemIndex);
+            orderTicketUI.SetDropdownIndexP2Item(i + 1, 0);
+
+            // Move the slot indicator visuals (Phase 2 drops set BOTH arrays, so clear/set both here too)
+            slotDropsP2[i + 1].SetActive(false);
+            slotDropsP2[i].SetActive(true);
+            slotDrops[i + 1].SetActive(false);
+            slotDrops[i].SetActive(true);
+
+            bool wasLocked = orderTicketUI.isSlotLocked(i + 1);
+            orderTicketUI.SetSlotLocked(i + 1, false);
+            orderTicketUI.SetSlotLocked(i, wasLocked);
+
+            if (wasLocked)
+            {
+                orderTicketUI.SetRowVisible(orderTicketUI.phase2ItemDropdowns[i], false);
+                orderTicketUI.SetRowEditable(orderTicketUI.phase2ItemDropdowns[i], false);
+                orderTicketUI.SetRowVisibleP2(orderTicketUI.dataTypeDropdowns[i], false);
+                orderTicketUI.SetRowEditableP2(orderTicketUI.dataTypeDropdowns[i], false);
+            }
+            else
+            {
+                orderTicketUI.SetRowVisible(orderTicketUI.phase2ItemDropdowns[i], true);
+                orderTicketUI.SetRowEditable(orderTicketUI.phase2ItemDropdowns[i], true);
+                orderTicketUI.SetRowVisibleP2(orderTicketUI.dataTypeDropdowns[i], true);
+                orderTicketUI.SetRowEditableP2(orderTicketUI.dataTypeDropdowns[i], true);
+            }
+
+            orderTicketUI.RegisterDropUnit(i, orderTicketUI.getDropUnitValue(i + 1));
+            orderTicketUI.RegisterDropUnitName(i, orderTicketUI.getDropUnitName(i + 1));
+            orderTicketUI.RegisterDropItemP2(i, orderTicketUI.getDropItemValueP2(i + 1));
+            orderTicketUI.RegisterDropItemNameP2(i, orderTicketUI.getDropItemNameP2(i + 1));
+
+            orderTicketUI.RegisterDropUnit(i + 1, null);
+            orderTicketUI.RegisterDropUnitName(i + 1, null);
+            orderTicketUI.RegisterDropItemP2(i + 1, null);
+            orderTicketUI.RegisterDropItemNameP2(i + 1, null);
+
+            lastFilledIndex = i + 1;
+        }
+
+        orderTicketUI.SetRowVisible(orderTicketUI.phase2ItemDropdowns[lastFilledIndex], false);
+        orderTicketUI.SetRowVisibleP2(orderTicketUI.dataTypeDropdowns[lastFilledIndex], false);
+        slotDropsP2[lastFilledIndex].SetActive(false);
+        slotDrops[lastFilledIndex].SetActive(false);
     }
 
 }

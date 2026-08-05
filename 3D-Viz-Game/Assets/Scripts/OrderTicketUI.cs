@@ -69,6 +69,12 @@ public class OrderTicketUI : MonoBehaviour
     //For drag and drop
     private Dictionary<int, string> droppedAnswers = new Dictionary<int, string>();
     private Dictionary<int, string> droppedIngredientNames = new Dictionary<int, string>();
+
+    //Part 2 Dictionaries
+    private Dictionary<int, string> droppedUnitAnswers = new Dictionary<int, string>();
+    private Dictionary<int, string> droppedUnitNames = new Dictionary<int, string>();
+    private Dictionary<int, string> droppedItemAnswersP2 = new Dictionary<int, string>();
+    private Dictionary<int, string> droppedItemNamesP2 = new Dictionary<int, string>();
     
     //Claude
     private HashSet<int> lockedSlots = new HashSet<int>();
@@ -153,6 +159,12 @@ public class OrderTicketUI : MonoBehaviour
      public void PopulateDropdownsUnits(List<string> correctUnits, List<string> correctItems)
     {
         Debug.Log($"PopulateDropdownsUnits called. Units: {correctUnits.Count}, Items: {correctItems.Count}");
+
+        droppedUnitAnswers.Clear();
+        droppedUnitNames.Clear();
+        droppedItemAnswersP2.Clear();
+        droppedItemNamesP2.Clear();
+
         correctUnitValues = correctUnits;  
         correctItemValues = correctItems; 
 
@@ -164,13 +176,6 @@ public class OrderTicketUI : MonoBehaviour
 
         var unitOptions = new List<string>(uniqueUnits);
         ShuffleList(unitOptions);
-        // --- Unit dropdowns ---
-        // var nonBlankUnits = new List<string>();
-        // foreach (var v in correctUnitValues)
-        //     if (!string.IsNullOrEmpty(v)) nonBlankUnits.Add(v);
-
-        // var unitOptions = new List<string>(nonBlankUnits);
-        // ShuffleList(unitOptions);
 
         for (int i = 0; i < dataTypeDropdowns.Count; i++)
         {
@@ -263,10 +268,6 @@ public class OrderTicketUI : MonoBehaviour
             print($"Checking slot {i}: {pair.ingredientName} (correct: {correct})");
             if (correct == "None")
             {
-                //SetRowVisible(pair, false);
-                // corrections.Add("I did not ask for that.");
-                
-                // continue;
 
                 //Helped with Claude
                 int wrongSlot = -1;
@@ -411,108 +412,235 @@ public class OrderTicketUI : MonoBehaviour
 
     public void CheckAnswersPhase2()
     {
+        Debug.Log("checked phase 2");
         if ((correctUnitValues == null || correctUnitValues.Count == 0) &&
             (correctItemValues == null || correctItemValues.Count == 0))
         {
             Debug.LogWarning("OrderTicketUI: Phase 2 correctValues are empty; did NPC populate?");
             return;
         }
-
+        
         var corrections = new List<string>();
         bool anyIncorrect = false;
 
         // Check unit dropdowns
         for (int i = 0; i < dataTypeDropdowns.Count; i++)
-        {
-            if (correctUnitValues == null || i >= correctUnitValues.Count) { continue; }
+        { //Claude version
+            if (i >= correctUnitValues.Count) continue;
 
-            var pair = dataTypeDropdowns[i];
-            if (!pair.dropdown) { anyIncorrect = true; continue; }
+                var pair = dataTypeDropdowns[i];
+                if (!pair.dropdown)
+                {
+                    anyIncorrect = true;
+                    continue;
+                }
 
-            string selected = (pair.dropdown.options.Count > pair.dropdown.value)
-                ? pair.dropdown.options[pair.dropdown.value].text : "";
+                string correct = correctUnitValues[i];
+                print(correct);
+                if (correct == "None")
+                {
+                    int wrongSlot = -1;
+                    foreach (var kvp in droppedUnitNames)
+                    {
+                        if (!string.IsNullOrEmpty(kvp.Value) &&
+                            (kvp.Value.ToLower().Contains(pair.UnitName.ToLower())
+                            || pair.UnitName.ToLower().Contains(kvp.Value.ToLower())))
+                        {
+                            wrongSlot = kvp.Key;
+                            break;
+                        }
+                    }
 
-            string correct = correctUnitValues[i];
-            bool isCorrect = (selected == correct);
+                    if (wrongSlot != -1)
+                    {
+                        anyIncorrect = true;
+                        var wrongSlotPair = dataTypeDropdowns[wrongSlot];
+                        SetRowVisibleP2(wrongSlotPair, true);
+                        SetRowEditableP2(wrongSlotPair, true);
+                        corrections.Add($"I did not ask for <color=red><b>{pair.UnitName}</b></color>.");
+                    }
+                    continue;
+                }
 
-            if (isCorrect)
-            {
-                if (hideCorrectRows) SetRowVisibleP2(pair, false);
-                else SetRowEditableP2(pair, false);
-            }
-            else
-            {
-                anyIncorrect = true;
-                SetRowVisibleP2(pair, true);
-                SetRowEditableP2(pair, true);
+                int matchedSlot = -1;
+                foreach (var kvp in droppedUnitAnswers)
+                {
+                    if (droppedUnitNames.TryGetValue(kvp.Key, out string droppedName))
+                    {
+                        if (droppedName.ToLower().Contains(pair.UnitName.ToLower())
+                            || pair.UnitName.ToLower().Contains(droppedName.ToLower()))
+                        {
+                            matchedSlot = kvp.Key;
+                            break;
+                        }
+                    }
+                }
+                
+                if (matchedSlot == -1)
+                {
+                    anyIncorrect = true;
+                    string missingName = string.IsNullOrEmpty(pair.UnitName) ? "a unit" : pair.UnitName;
+                    corrections.Add($"You forgot to add <color=red><b>{missingName} ({correct})</b></color>");
+                    continue;
+                }
 
-                if (string.IsNullOrEmpty(correct) && !string.IsNullOrEmpty(selected))
-                    corrections.Add("I did not ask for that.");
+                var slotRow = dataTypeDropdowns[matchedSlot];
+                var slotDropdown = slotRow.dropdown;
+
+                string selected = (slotDropdown.options.Count > slotDropdown.value)
+                    ? slotDropdown.options[slotDropdown.value].text : "";
+
+                bool isCorrect = (selected == correct);
+
+                if (isCorrect)
+                {
+                    if (hideCorrectRows)
+                    {
+                        SetRowVisibleP2(slotRow, false);
+                        SetSlotLocked(matchedSlot, true);
+                    }
+                    else
+                        SetRowEditableP2(slotRow, false);
+                }
                 else
                 {
-                    string name = string.IsNullOrEmpty(pair.UnitName) ? "that unit" : pair.UnitName;
-                    
-                    print (pair.UnitName);
-                    print (correct + "d"); //g, oz, none
-                    if (name.ToLower().Contains("bun"))
+                    anyIncorrect = true;
+                    SetRowVisibleP2(slotRow, true);
+                    SetRowEditableP2(slotRow, true);
+
+                    if (string.IsNullOrEmpty(correct) && selected != "None")
                     {
-                        corrections.Add($"The bun should be in {correct}."); //IRRELEVENT
+                        corrections.Add("I did not ask for that.");
                     }
                     else
                     {
-                        corrections.Add($"No, the unit for <color=red><b>{name}</b></color> should be <color=red><b>{correct}</b></color>.");
+                        string name = string.IsNullOrEmpty(pair.UnitName) ? "that unit" : pair.UnitName;
+                        if (name.ToLower().Contains("bun"))
+                        {
+                            corrections.Add($"The bun should be in <color=red><b>{correct}</b></color>."); 
+                        }
+                        else
+                        {
+                            corrections.Add($"No, the unit for <color=red><b>{name}</b></color> should be <color=red><b>{correct}</b></color>.");
+                        }
                     }
                 }
-            }
-        }
+            } //Claude version
 
-        // Check item dropdowns
-        for (int i = 0; i < phase2ItemDropdowns.Count; i++)
-        {
-            if (correctItemValues == null || i >= correctItemValues.Count) { continue; }
-
-            var pair = phase2ItemDropdowns[i];
-            if (!pair.dropdown) { anyIncorrect = true; continue; }
-
-            string selected = (pair.dropdown.options.Count > pair.dropdown.value)
-                ? pair.dropdown.options[pair.dropdown.value].text : "";
-
-            string correct = correctItemValues[i];
-            bool isCorrect = (selected == correct);
-
-            if (isCorrect)
-            {
-                if (hideCorrectRows) SetRowVisible(pair, false);
-                else SetRowEditable(pair, false);
-            }
-            else
-            {
-                anyIncorrect = true;
-                SetRowVisible(pair, true);
-                SetRowEditable(pair, true);
-
-                if (string.IsNullOrEmpty(correct) && !string.IsNullOrEmpty(selected))
-                    corrections.Add("I did not ask for that.");
-                else
+            if (correctItemValues != null)
+            { //Help from claude
+                for (int i = 0; i < phase2ItemDropdowns.Count; i++)
                 {
-                    string name = string.IsNullOrEmpty(pair.ingredientName) ? "that" : pair.ingredientName;
-                    print (pair.ingredientName);
-                    print (correct);
-                    if (name.ToLower().Contains("bun"))
-                    {
-                        if (correct.Contains("10")) name = "Small Bun (10g)";
-                        else if (correct.Contains("20")) name = "Medium Bun (20g)";
-                        else if (correct.Contains("30")) name = "Large Bun (30g)";
+                    if (i >= correctItemValues.Count) continue;
 
-                        corrections.Add($"No, I said a <color=red><b>{name}</b></color>.");
+                    var pair = phase2ItemDropdowns[i];
+                    if (!pair.dropdown)
+                    {
+                        anyIncorrect = true;
+                        continue;
+                    }
+
+                    string correct = correctItemValues[i];
+
+                    if (correct == "None")
+                    {
+                        int wrongSlot = -1;
+                        foreach (var kvp in droppedItemNamesP2)
+                        {
+                            if (!string.IsNullOrEmpty(kvp.Value) &&
+                                (kvp.Value.ToLower().Contains(pair.ingredientName.ToLower())
+                                || pair.ingredientName.ToLower().Contains(kvp.Value.ToLower())))
+                            {
+                                wrongSlot = kvp.Key;
+                                break;
+                            }
+                        }
+
+                        if (wrongSlot != -1)
+                        {
+                            anyIncorrect = true;
+                            var wrongSlotPair = phase2ItemDropdowns[wrongSlot];
+                            SetRowVisible(wrongSlotPair, true);
+                            SetRowEditable(wrongSlotPair, true);
+                            corrections.Add($"I did not ask for <color=red><b>{pair.ingredientName}</b></color>.");
+                        }
+                        continue;
+                    }
+
+                    int matchedSlot = -1;
+                    foreach (var kvp in droppedItemAnswersP2)
+                    {
+                        if (droppedItemNamesP2.TryGetValue(kvp.Key, out string droppedName))
+                        {
+                            if (droppedName.ToLower().Contains(pair.ingredientName.ToLower())
+                                || pair.ingredientName.ToLower().Contains(droppedName.ToLower()))
+                            {
+                                matchedSlot = kvp.Key;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (matchedSlot == -1)
+                    {
+                        if (!pair.ingredientName.ToLower().Contains("bun"))
+                        {
+                            anyIncorrect = true;
+                            string missingName = string.IsNullOrEmpty(pair.ingredientName) ? "an ingredient" : pair.ingredientName;
+                            corrections.Add($"You forgot to add <color=red><b>{missingName} ({correct})</b></color>");
+                            
+                        }
+                        continue;
+                        
+                    }
+
+                    var slotRow = phase2ItemDropdowns[matchedSlot];
+                    var slotDropdown = slotRow.dropdown;
+
+                    string selected = (slotDropdown.options.Count > slotDropdown.value)
+                        ? slotDropdown.options[slotDropdown.value].text : "";
+
+                    bool isCorrect = (selected == correct);
+
+                    if (isCorrect)
+                    {
+                        if (hideCorrectRows)
+                        {
+                            SetRowVisible(slotRow, false);
+                            SetSlotLocked(matchedSlot, true);
+                        }
+                        else
+                            SetRowEditable(slotRow, false);
                     }
                     else
                     {
-                        corrections.Add($"No, I said <color=red><b>{correct}</b></color> of <color=red><b>{name}</b></color>.");
+                        anyIncorrect = true;
+                        SetRowVisible(slotRow, true);
+                        SetRowEditable(slotRow, true);
+
+                        if (string.IsNullOrEmpty(correct) && selected != "None")
+                        {
+                            corrections.Add("I did not ask for that.");
+                        }
+                        else
+                        {
+                            string name = string.IsNullOrEmpty(pair.ingredientName) ? "that" : pair.ingredientName;
+                            if (name.ToLower().Contains("bun"))
+                            {
+                                if (correct.Contains("10")) name = "Small Bun (10g)";
+                                else if (correct.Contains("20")) name = "Medium Bun (20g)";
+                                else if (correct.Contains("30")) name = "Large Bun (30g)";
+
+                                corrections.Add($"No, I said a <color=red><b>{name}</b></color>.");
+                            }
+                            else
+                            {
+                                corrections.Add($"No, I said <color=red><b>{correct}</b></color> of <color=red><b>{name}</b></color>.");
+                            }
+                        }
                     }
                 }
-            }
-        }
+            } 
 
         if (!anyIncorrect)
         {
@@ -559,13 +687,13 @@ public class OrderTicketUI : MonoBehaviour
     }
 
     //FOR PHASE 2
-    private void SetRowVisibleP2(UnitDropdownPair pair, bool visible)
+    public void SetRowVisibleP2(UnitDropdownPair pair, bool visible)
     {
         if (pair.rowRoot) pair.rowRoot.SetActive(visible);
         else if (pair.dropdown) pair.dropdown.gameObject.SetActive(visible);
     }
 
-    private void SetRowEditableP2(UnitDropdownPair pair, bool editable)
+    public void SetRowEditableP2(UnitDropdownPair pair, bool editable)
     {
         if (pair.rowCanvasGroup)
         {
@@ -664,6 +792,27 @@ public class OrderTicketUI : MonoBehaviour
         return droppedIngredientNames[index];
     }
 
+    //Part 2 (Help from claude) NOT HAPPY WITH THIS APPROACH! TRY AND CHANGE TO BE MORE ABSTRACTED
+    public void RegisterDropUnit(int index, string value)
+    {
+        droppedUnitAnswers[index] = value;
+    }
+
+    public void RegisterDropUnitName(int index, string value)
+    {
+        droppedUnitNames[index] = value;
+    }
+
+    public void RegisterDropItemP2(int index, string value)
+    {
+        droppedItemAnswersP2[index] = value;
+    }
+
+    public void RegisterDropItemNameP2(int index, string value)
+    {
+        droppedItemNamesP2[index] = value;
+    }
+
     //Claude
     public int GetSelectedIndex(int index)
     {
@@ -688,7 +837,7 @@ public class OrderTicketUI : MonoBehaviour
     }
 
 
-    //Claude
+    //Mine
     public void HideRows()
     {
         foreach (var pair in ingredientDropdowns)
@@ -703,6 +852,48 @@ public class OrderTicketUI : MonoBehaviour
             }
         }
     }
+
+    //TESTING WITH CLAUDE
+    public int GetSelectedIndexDataType(int index)
+    {
+        if (index < 0 || index >= dataTypeDropdowns.Count) return 0;
+        var pair = dataTypeDropdowns[index];
+        if (!pair.dropdown) return 0;
+        return pair.dropdown.value;
+    }
+
+    public void SetDropdownIndexDataType(int index, int dropdownIndex)
+    {
+        if (index < 0 || index >= dataTypeDropdowns.Count) return;
+        var pair = dataTypeDropdowns[index];
+        if (!pair.dropdown) return;
+        if (dropdownIndex < 0 || dropdownIndex >= pair.dropdown.options.Count) return;
+        pair.dropdown.value = dropdownIndex;
+        pair.dropdown.RefreshShownValue();
+    }
+
+    public int GetSelectedIndexP2Item(int index)
+    {
+        if (index < 0 || index >= phase2ItemDropdowns.Count) return 0;
+        var pair = phase2ItemDropdowns[index];
+        if (!pair.dropdown) return 0;
+        return pair.dropdown.value;
+    }
+
+    public void SetDropdownIndexP2Item(int index, int dropdownIndex)
+    {
+        if (index < 0 || index >= phase2ItemDropdowns.Count) return;
+        var pair = phase2ItemDropdowns[index];
+        if (!pair.dropdown) return;
+        if (dropdownIndex < 0 || dropdownIndex >= pair.dropdown.options.Count) return;
+        pair.dropdown.value = dropdownIndex;
+        pair.dropdown.RefreshShownValue();
+    }
+
+    public string getDropUnitValue(int index) => droppedUnitAnswers.TryGetValue(index, out var v) ? v : null;
+    public string getDropUnitName(int index) => droppedUnitNames.TryGetValue(index, out var v) ? v : null;
+    public string getDropItemValueP2(int index) => droppedItemAnswersP2.TryGetValue(index, out var v) ? v : null;
+    public string getDropItemNameP2(int index) => droppedItemNamesP2.TryGetValue(index, out var v) ? v : null;
 
     
 

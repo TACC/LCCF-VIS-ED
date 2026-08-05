@@ -42,6 +42,8 @@ public class NPCOrderManager_Single : MonoBehaviour
     public Animator taskAnim;
     public Animator tickAnim;
     public Animator tickPAnim;
+
+    public Animator textAnim;
     public GameObject npc;
 
     public GameObject countertop;
@@ -73,20 +75,18 @@ public class NPCOrderManager_Single : MonoBehaviour
     private string previousLines = "";           // accumulated text already shown
 
     [SerializeField] private GameObject[] slotDrops; // Delay before showing task after order
+    [SerializeField] private GameObject[] slotDropsP2; // Delay before showing task after order
+    [SerializeField] private GameObject[] unitDrops;
     void Start()
     {
         EnsureSessionAndMode();
         //ordTicket2.SetActive(false);
         ordTicket1.SetActive(true);
         itemPool.SetActive(true); 
-        for (int i = 0; i < ingredients.Count; i++)
-        {
-            slotDrops[i].SetActive(false);
-        }
+        resetSlots(slotDrops);
 
         bunChosen = false;
         countertop.SetActive(true);
-        //taskAnim = GetComponent<Animator>();
         GenerateOrder();
     }
 
@@ -220,7 +220,11 @@ public class NPCOrderManager_Single : MonoBehaviour
         }
         else
         {
+            
             GenerateOrderP2();
+            resetSlots(unitDrops);
+            resetSlots(slotDropsP2);
+            
         }
         
     }
@@ -230,6 +234,7 @@ public class NPCOrderManager_Single : MonoBehaviour
     {
         bunChosen = false; // Reset bun choice for new order
         print("Generating phase 2 order...");
+        
         npcOrderLines.Clear();
         previousLines = "";
         if (orderText) orderText.text = "";
@@ -383,7 +388,7 @@ public class NPCOrderManager_Single : MonoBehaviour
             //task.SetActive(false);
             taskAnim.SetTrigger("anim2");
             tickAnim.SetTrigger("animT2");
-            itemPool.SetActive(false); //REPLACE
+            textAnim.SetTrigger("TextoutAnim");
             taskOut = false;
             // Transition logic and next game phase
             transitionPanelIn.SetActive(true);           
@@ -401,24 +406,19 @@ public class NPCOrderManager_Single : MonoBehaviour
             yield return new WaitForSeconds(animDelay);
             countertop.SetActive(true);
             videoPanel.SetActive(false);
-            //Start 2nd phase
-            //IF NOT SECOND TRUE THEN END
-            secondPhase();
             yield return new WaitForSeconds(animDelay);
             
             transitionPanelOut.SetActive(false);
-            
-            
-            //CHANGE TO MAKE TIME MORE ABSTRACTED
-            //THIS WILL BE REPEATED FOR ALL MINIGAMES
+            //Start 2nd phase
+            //IF NOT SECOND TRUE THEN END
+            secondPhase();
             
         }
         else
         {
-            if (orderText) orderText.text = "Yay! (Standing end of phase2/Game)"; //Placeholder
+            if (orderText) orderText.text = "Yay! (Standing end of phase2/Game)"; //Placeholder (Might have it leave screen with TextoutAnim)
             taskAnim.SetTrigger("anim2");
             tickPAnim.SetTrigger("animP2");
-            itemPool.SetActive(false); //REPLACE
             // End video/transition
             //THIS IS THE CURRENT END OF GAME
         }
@@ -443,12 +443,12 @@ public class NPCOrderManager_Single : MonoBehaviour
         
         if (!taskOut)
         {
+            textAnim.SetTrigger("TextinAnim");
             taskAnim.SetTrigger("anim1");
             tickAnim.SetTrigger("animT1"); //first phase ticket anim
             if (phase2)
             {
                 tickPAnim.SetTrigger("animP1"); //second phase anim
-                itemPool.SetActive(true); //REPLACE
             } 
             taskOut = true;
         }
@@ -496,5 +496,14 @@ public class NPCOrderManager_Single : MonoBehaviour
             int rand = Random.Range(i, list.Count);
             (list[i], list[rand]) = (list[rand], list[i]);
         }
+    }
+
+    private void resetSlots(GameObject[] slotArray)
+    {
+        for (int i = 0; i < slotArray.Length; i++)
+        {
+            slotArray[i].SetActive(false);
+        }
+
     }
 }
