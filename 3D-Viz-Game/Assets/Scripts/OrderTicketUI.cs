@@ -61,7 +61,9 @@ public class OrderTicketUI : MonoBehaviour
     private List<string> correctUnitValues;
     private List<string> correctItemValues;
 
-    
+    private int answeredRight = 3;
+
+    [SerializeField] private ScoreManager scoreManager;
 
     [Header("Drop Handler")]
     [SerializeField] private DropHandler dropHandler;
@@ -352,7 +354,7 @@ public class OrderTicketUI : MonoBehaviour
             else
             {
                 anyIncorrect = true;
-
+                
                 // Keep incorrect visible & editable
                 SetRowVisible(slotRow, true);
                 SetRowEditable(slotRow, true);
@@ -383,13 +385,34 @@ public class OrderTicketUI : MonoBehaviour
                     
                 }
             }
+            
         }
 
         
 
         if (!anyIncorrect)
         {
-            print("done");
+            print("Answer Count: " + answeredRight);
+            
+            if (answeredRight == 3) //All correct
+            {
+                scoreManager.AddScore(30);
+            }
+            else if (answeredRight == 2) // 1 wrong
+            {
+                scoreManager.AddScore(20);
+            }
+            else if (answeredRight == 1) // 2 wrong
+            {
+                scoreManager.AddScore(10);
+            } 
+            else //4 and beyond incorrect
+            {
+                scoreManager.AddScore(5);
+            }
+
+            answeredRight = 3; //reset
+
             if (npcOrderManagerSingle) npcOrderManagerSingle.ShowThanksAndReset();
             else if (npcOrderManager) npcOrderManager.ShowThanksAndReset();
             else Debug.LogWarning("OrderTicketUI: No order manager assigned to receive success.");
@@ -398,7 +421,9 @@ public class OrderTicketUI : MonoBehaviour
 
         if (npcOrderManagerSingle)
         {
-            print("WHAT");
+            //print("WHAT");
+            answeredRight--;
+            print("Answer Count: " + answeredRight);
             npcOrderManagerSingle.ShowCorrectionLines(corrections);
             npcOrderManagerSingle.RegisterWrongAttempt();
         }
@@ -505,6 +530,7 @@ public class OrderTicketUI : MonoBehaviour
                 else
                 {
                     anyIncorrect = true;
+                    
                     SetRowVisibleP2(slotRow, true);
                     SetRowEditableP2(slotRow, true);
 
@@ -644,6 +670,24 @@ public class OrderTicketUI : MonoBehaviour
 
         if (!anyIncorrect)
         {
+            if (answeredRight == 3) //All correct
+            {
+                scoreManager.AddScore(30);
+            }
+            else if (answeredRight == 2) // 1 wrong
+            {
+                scoreManager.AddScore(20);
+            }
+            else if (answeredRight == 1) // 2 wrong
+            {
+                scoreManager.AddScore(10);
+            } 
+            else //4 and beyond incorrect
+            {
+                scoreManager.AddScore(5);
+            }
+
+            answeredRight = 3; //reset
             if (npcOrderManagerSingle) npcOrderManagerSingle.ShowThanksAndReset();
             else if (npcOrderManager)  npcOrderManager.ShowThanksAndReset();
             else Debug.LogWarning("OrderTicketUI: No order manager assigned to receive success.");
@@ -652,6 +696,7 @@ public class OrderTicketUI : MonoBehaviour
 
         if (npcOrderManagerSingle)
         {
+            answeredRight--;
             npcOrderManagerSingle.ShowCorrectionLines(corrections);
             npcOrderManagerSingle.RegisterWrongAttempt();
         }
