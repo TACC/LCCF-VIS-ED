@@ -18,7 +18,7 @@ public class DishGameManager : MonoBehaviour
     public TMP_Text scoreText;
 
     [Header("Results Panel (optional)")]
-    public GameObject resultsPanel;
+    public GameObject transitionPanel;
     public TMP_Text resultsTitleText;
     public TMP_Text resultsBodyText;
     public Button resultsCloseButton;
@@ -58,6 +58,13 @@ public class DishGameManager : MonoBehaviour
 
     public void EndRound()
     {
+        //idea: 
+        // 1. immediately take away control
+        // 2. show animation of text "Time's Up!" emerging
+        // 3. fade to black then back
+        // 4. clear all plates on screen
+        // 5. transition screen up
+
         if (!running) return;
         running = false;
 
@@ -65,9 +72,15 @@ public class DishGameManager : MonoBehaviour
         {
             dishline.OnPlateStacked -= HandlePlateStacked;
             dishline.StopSpawning();
+
         }
         Debug.Log("round over");
         ShowResults();
+    }
+
+    private void fade()
+    {
+
     }
 
     public void ParaButton()
@@ -117,9 +130,10 @@ public class DishGameManager : MonoBehaviour
     // result helpers
     void ShowResults()
     {
-        if (!resultsPanel) return;
+        // transition screen, show explaination text and video, continue button to advance.
+        if (!transitionPanel) return;
 
-        resultsPanel.SetActive(true);
+        transitionPanel.SetActive(true);
 
         if (resultsTitleText)
             resultsTitleText.text = "Shift Results";
@@ -140,7 +154,7 @@ public class DishGameManager : MonoBehaviour
 
     public void HideResults()
     {
-        if (resultsPanel) resultsPanel.SetActive(false);
+        if (transitionPanel) transitionPanel.SetActive(false);
     }
 
     string FormatTime(int totalSeconds)
