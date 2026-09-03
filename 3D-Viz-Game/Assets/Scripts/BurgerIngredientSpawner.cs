@@ -21,7 +21,7 @@ public class BurgerIngredientSpawner : MonoBehaviour
     public int[] ingredientSequence = { 0, 1, 2, 3, 4, 5 };
 
     [SerializeField] private BurgerStackManager stackManager;
-    [Header ("StationCamera")]
+    [Header("StationCamera")]
     [SerializeField] private Camera stationCamera;
 
     [Header("Plate System")]
@@ -81,7 +81,7 @@ public class BurgerIngredientSpawner : MonoBehaviour
             clone.transform.SetParent(sp, worldPositionStays: false);
             clone.transform.localPosition = Vector3.zero;
             clone.transform.localRotation = Quaternion.identity;
-            clone.transform.localScale    = prefabToUse.transform.localScale;
+            clone.transform.localScale = prefabToUse.transform.localScale;
 
             var drag = clone.GetComponent<DragHandler3D>();
             if (drag != null)
@@ -168,6 +168,9 @@ public class BurgerIngredientSpawner : MonoBehaviour
             Debug.Log("Must place an item before continuing.");
             return;
         }
+
+        StrikeThroughCurrentIngredient();
+
         currentStep++;
         SpawnRound();
     }
@@ -195,11 +198,26 @@ public class BurgerIngredientSpawner : MonoBehaviour
 
             int stackNumber = int.Parse(label.text);
             int correctNumber = correctNumbers[i];
-
             if (orderTextSlots.Length > i)
             {
-                orderTextSlots[i].color = stackNumber == correctNumber ? Color.green : Color.red;
-                if (stackNumber != correctNumber) isCorrect = false;
+                bool correct = stackNumber == correctNumber;
+
+                string name = i < ingredientNames.Length
+                    ? ingredientNames[i]
+                    : "???";
+
+                if (correct)
+                {
+                    orderTextSlots[i].text =
+                        $"<color=green><s>{name}: {correctNumbers[i]}</s></color>";
+                }
+                else
+                {
+                    orderTextSlots[i].text =
+                        $"<color=red><s>{name}: {correctNumbers[i]}</s></color>";
+
+                    isCorrect = false;
+                }
             }
         }
 
@@ -211,7 +229,7 @@ public class BurgerIngredientSpawner : MonoBehaviour
         }
 
         if (isCorrect) StartCoroutine(SlideBurgerOffScreen(Vector3.right));
-        else           StartCoroutine(ExplodeBurgerAndReset());
+        else StartCoroutine(ExplodeBurgerAndReset());
 
         if (nextButton != null) nextButton.interactable = false;
     }
@@ -315,5 +333,21 @@ public class BurgerIngredientSpawner : MonoBehaviour
         }
 
         newPlate.transform.position = end;
+    }
+
+    private void StrikeThroughCurrentIngredient()
+    {
+        if (orderTextSlots == null)
+            return;
+
+        if (currentStep < 0 || currentStep >= orderTextSlots.Length)
+            return;
+
+        TextMeshProUGUI orderText = orderTextSlots[currentStep];
+
+        if (orderText == null)
+            return;
+
+        orderText.text = $"<s>{orderText.text}</s>";
     }
 }
