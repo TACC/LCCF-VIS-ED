@@ -42,6 +42,14 @@ public class NPCOrderManager_Single : MonoBehaviour
     public Animator taskAnim;
     public Animator tickAnim;
     public Animator tickPAnim;
+
+    public Animator npcAnim;
+
+    public Animator characterAnim;
+
+    public Animator textAnim;
+
+    
     public GameObject npc;
 
     public GameObject countertop;
@@ -73,20 +81,21 @@ public class NPCOrderManager_Single : MonoBehaviour
     private string previousLines = "";           // accumulated text already shown
 
     [SerializeField] private GameObject[] slotDrops; // Delay before showing task after order
+    [SerializeField] private GameObject[] slotDropsP2; // Delay before showing task after order
+    [SerializeField] private GameObject[] unitDrops;
+
+    [SerializeField] private ScoreManager scoreManager; // Reference to the ScoreManager
     void Start()
     {
         EnsureSessionAndMode();
+        scoreManager.ResetScore(); // Reset score at the start of the game/session
         //ordTicket2.SetActive(false);
         ordTicket1.SetActive(true);
         itemPool.SetActive(true); 
-        for (int i = 0; i < ingredients.Count; i++)
-        {
-            slotDrops[i].SetActive(false);
-        }
+        resetSlots(slotDrops);
 
         bunChosen = false;
         countertop.SetActive(true);
-        //taskAnim = GetComponent<Animator>();
         GenerateOrder();
     }
 
@@ -220,7 +229,11 @@ public class NPCOrderManager_Single : MonoBehaviour
         }
         else
         {
+            
             GenerateOrderP2();
+            resetSlots(unitDrops);
+            resetSlots(slotDropsP2);
+            
         }
         
     }
@@ -230,6 +243,7 @@ public class NPCOrderManager_Single : MonoBehaviour
     {
         bunChosen = false; // Reset bun choice for new order
         print("Generating phase 2 order...");
+        
         npcOrderLines.Clear();
         previousLines = "";
         if (orderText) orderText.text = "";
@@ -356,6 +370,7 @@ public class NPCOrderManager_Single : MonoBehaviour
     // Public: called by OrderTicketUI when all answers are correct
     public void ShowThanksAndReset()
     {
+        
         if (GameSession.Instance != null) GameSession.Instance.CompleteTask(true);
 
         if (orderText) orderText.text = "Thanks!";
@@ -372,6 +387,11 @@ public class NPCOrderManager_Single : MonoBehaviour
         yield return new WaitForSeconds(animDelay);
         if (ordernumber > 0)
         {
+            characterAnim.SetFloat("Speed", .15f);
+            npc.transform.Rotate(0f, 180f, 0f);
+            npcAnim.SetTrigger("npcOut");
+            yield return new WaitForSeconds(8f);
+            npc.transform.Rotate(0f, 180f, 0f);
             if (singleNpcManager)        singleNpcManager.BeginNextRound(); // preferred 3D flow
             else if (legacy2DNpcManager) legacy2DNpcManager.SwapNPCs();     // legacy 2D flow
             else                         GenerateOrder();
@@ -380,10 +400,11 @@ public class NPCOrderManager_Single : MonoBehaviour
         {
             // No more orders; could show a "closing time" message or transition to another scene
             if (orderText) orderText.text = "All done for today!";
+            scoreManager.ResetScore(); // Reset the score for the next phase
             //task.SetActive(false);
             taskAnim.SetTrigger("anim2");
             tickAnim.SetTrigger("animT2");
-            itemPool.SetActive(false); //REPLACE
+            textAnim.SetTrigger("TextoutAnim");
             taskOut = false;
             // Transition logic and next game phase
             transitionPanelIn.SetActive(true);           
@@ -401,24 +422,19 @@ public class NPCOrderManager_Single : MonoBehaviour
             yield return new WaitForSeconds(animDelay);
             countertop.SetActive(true);
             videoPanel.SetActive(false);
-            //Start 2nd phase
-            //IF NOT SECOND TRUE THEN END
-            secondPhase();
             yield return new WaitForSeconds(animDelay);
             
             transitionPanelOut.SetActive(false);
+            //Start 2nd phase
             
-            
-            //CHANGE TO MAKE TIME MORE ABSTRACTED
-            //THIS WILL BE REPEATED FOR ALL MINIGAMES
+            secondPhase();
             
         }
         else
         {
-            if (orderText) orderText.text = "Yay! (Standing end of phase2/Game)"; //Placeholder
+            if (orderText) orderText.text = "Yay! (Standing end of phase2/Game)"; //Placeholder (Might have it leave screen with TextoutAnim)
             taskAnim.SetTrigger("anim2");
             tickPAnim.SetTrigger("animP2");
-            itemPool.SetActive(false); //REPLACE
             // End video/transition
             //THIS IS THE CURRENT END OF GAME
         }
@@ -441,14 +457,20 @@ public class NPCOrderManager_Single : MonoBehaviour
     private IEnumerator AppendLinesWithTyping(IEnumerable<string> lines, float perLineDelay)
     {
         
+        npcAnim.SetTrigger("npcIn");
+        yield return new WaitForSeconds(5f); // Wait for NPC to finish entering
+        characterAnim.SetFloat("Speed", 0f);
         if (!taskOut)
         {
+            
+            
+            textAnim.SetTrigger("TextinAnim");
+            
             taskAnim.SetTrigger("anim1");
             tickAnim.SetTrigger("animT1"); //first phase ticket anim
             if (phase2)
             {
                 tickPAnim.SetTrigger("animP1"); //second phase anim
-                itemPool.SetActive(true); //REPLACE
             } 
             taskOut = true;
         }
@@ -496,5 +518,14 @@ public class NPCOrderManager_Single : MonoBehaviour
             int rand = Random.Range(i, list.Count);
             (list[i], list[rand]) = (list[rand], list[i]);
         }
+    }
+
+    private void resetSlots(GameObject[] slotArray)
+    {
+        for (int i = 0; i < slotArray.Length; i++)
+        {
+            slotArray[i].SetActive(false);
+        }
+
     }
 }

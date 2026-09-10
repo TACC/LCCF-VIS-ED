@@ -53,6 +53,7 @@ public class DishlineController : MonoBehaviour
     public void StopSpawning()
     {
         if (generatorCo != null) { StopCoroutine(generatorCo); generatorCo = null; }
+        clearAllDishes();
     }
 
     //clear all dishes when a round ends

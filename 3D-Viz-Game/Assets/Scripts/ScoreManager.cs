@@ -1,38 +1,26 @@
-// using Unity.Netcode;
-// using UnityEngine;
-// using UnityEngine.UI;
+using UnityEngine;
+using TMPro;
 
-// public class ScoreManager : NetworkBehaviour
-// {
-//     public static ScoreManager Instance;
-//     public Text scoreText;
-//     // synced variable
-//     private NetworkVariable<int> totalScore = new NetworkVariable<int>();
+public class ScoreManager : MonoBehaviour
+{
+    int score = 0;
 
-//     // only have one scoremanager in the scene
-//     private void Awake()
-//     {
-//         if (Instance == null) Instance = this;
-//     }
+    [SerializeField] TextMeshProUGUI scoreText;
 
-//     public override void OnNetworkSpawn()
-//     {
-//         // listens for changes to totalScore and then calls UpdateScoreDisplay
-//         totalScore.OnValueChanged += UpdateScoreDisplay;
-//         base.OnNetworkSpawn();
-//         Debug.Log("[ScoreManager] NetworkSpawned");
-//     }
+    public void AddScore(int amount)
+    {
+        score += amount;
+        UpdateScoreText();
+    }
 
-//     private void UpdateScoreDisplay(int oldVal, int newVal)
-//     {
-//         if (scoreText != null)
-//             scoreText.text = newVal.ToString();
-//     }
+    private void UpdateScoreText()
+    {
+        scoreText.text = $"Score: {score}";
+    }
 
-//     [ServerRpc(RequireOwnership = false)]
-//     public void AddScoreServerRPC()
-//     {
-//         totalScore.Value += 1;
-//         Debug.Log("Score is now: " + totalScore.Value);
-//     }
-// }
+    public void ResetScore()
+    {
+        score = 0;
+        UpdateScoreText();
+    }
+}

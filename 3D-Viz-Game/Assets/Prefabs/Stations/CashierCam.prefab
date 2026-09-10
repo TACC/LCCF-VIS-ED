@@ -294,6 +294,7 @@ RectTransform:
   m_LocalScale: {x: 0.29583448, y: 0.29583454, z: 0.29583448}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 4904957031694313759}
   - {fileID: 7468063933104117773}
   - {fileID: 6854172434553389622}
   - {fileID: 8687505934460209808}
@@ -997,20 +998,20 @@ RectTransform:
   - {fileID: 4713772788952595154}
   - {fileID: 1599592388116988645}
   - {fileID: 6632997342357966775}
-  - {fileID: 3633263186919511120}
   - {fileID: 3316141143833045729}
-  - {fileID: 7864960967834737478}
   - {fileID: 8668374267152379658}
-  - {fileID: 3420587467054821994}
   - {fileID: 7647901258400033411}
-  - {fileID: 24763842089600854}
   - {fileID: 4710425692396826279}
+  - {fileID: 4472516762213442801}
+  - {fileID: 6343617710762619927}
+  - {fileID: 3633263186919511120}
+  - {fileID: 7864960967834737478}
+  - {fileID: 3420587467054821994}
+  - {fileID: 24763842089600854}
   - {fileID: 3169547055948345622}
   - {fileID: 8803436300706571920}
   - {fileID: 4811115795759352333}
-  - {fileID: 4472516762213442801}
   - {fileID: 4969692551337268821}
-  - {fileID: 6343617710762619927}
   - {fileID: 862707467893590615}
   - {fileID: 5940585664730566665}
   - {fileID: 9144230790431491317}
@@ -2449,6 +2450,9 @@ MonoBehaviour:
   - {fileID: 7553017924586525897}
   - {fileID: 7092635891141512000}
   - {fileID: 7889453829259327672}
+  slotDropsP2: []
+  targetGroup: 0
+  slotsItemP2: []
   ingredientName: Tomato
   itemValue: 
   targetArea: {fileID: 5991771666511379446}
@@ -2866,18 +2870,18 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7725477986002767358}
   - {fileID: 3105707921898630150}
-  - {fileID: 3709996758709934347}
   - {fileID: 1872903420368664649}
-  - {fileID: 2810162180867773707}
   - {fileID: 9079163705035247088}
-  - {fileID: 7515293894044727635}
   - {fileID: 3228725048080228536}
-  - {fileID: 513648316104875538}
   - {fileID: 9215933309051571044}
-  - {fileID: 5033987646721672466}
   - {fileID: 1332330028533383186}
+  - {fileID: 7725477986002767358}
+  - {fileID: 3709996758709934347}
+  - {fileID: 2810162180867773707}
+  - {fileID: 7515293894044727635}
+  - {fileID: 513648316104875538}
+  - {fileID: 5033987646721672466}
   m_Father: {fileID: 4904957031694313759}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -2898,6 +2902,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slotNum: 0
+  slotNumUnit: 0
 --- !u!1 &843015102553278377
 GameObject:
   m_ObjectHideFlags: 0
@@ -5398,6 +5403,9 @@ MonoBehaviour:
   - {fileID: 7553017924586525897}
   - {fileID: 7092635891141512000}
   - {fileID: 7889453829259327672}
+  slotDropsP2: []
+  targetGroup: 0
+  slotsItemP2: []
   ingredientName: Onion
   itemValue: 
   targetArea: {fileID: 5991771666511379446}
@@ -6860,17 +6868,17 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1841430769906110003}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 6.7606235}
+  m_LocalScale: {x: 1.408445, y: 1.4084449, z: 1.408445}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6785878150800800690}
   - {fileID: 4097500233018292209}
-  m_Father: {fileID: 4934455483174057542}
+  m_Father: {fileID: 5718354741023702424}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -262.00003, y: -364.36002}
+  m_AnchoredPosition: {x: -1291.827, y: -438.81555}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1847539806801275545
@@ -8243,6 +8251,9 @@ MonoBehaviour:
   - {fileID: 7553017924586525897}
   - {fileID: 7092635891141512000}
   - {fileID: 7889453829259327672}
+  slotDropsP2: []
+  targetGroup: 0
+  slotsItemP2: []
   ingredientName: Tomato
   itemValue: 
   targetArea: {fileID: 5991771666511379446}
@@ -9400,8 +9411,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Submit
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
-  m_sharedMaterial: {fileID: -5205639276191846402, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -12007,8 +12018,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Cheese
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
-  m_sharedMaterial: {fileID: -5205639276191846402, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -12890,8 +12901,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Order Ticket
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
-  m_sharedMaterial: {fileID: -5205639276191846402, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -14988,8 +14999,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Order Ticket
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
-  m_sharedMaterial: {fileID: -5205639276191846402, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -15641,7 +15652,6 @@ RectTransform:
   - {fileID: 7456594609528292209}
   - {fileID: 6181050964656057368}
   - {fileID: 687456107681521577}
-  - {fileID: 4904957031694313759}
   m_Father: {fileID: 8552896709562551874}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -21033,8 +21043,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
-  m_sharedMaterial: {fileID: -5205639276191846402, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -23771,6 +23781,8 @@ MonoBehaviour:
   - {fileID: 7553017924586525897}
   - {fileID: 7092635891141512000}
   - {fileID: 7889453829259327672}
+  slotDropsP2: []
+  unitDrops: []
 --- !u!1 &6160562393619452227
 GameObject:
   m_ObjectHideFlags: 0
@@ -25143,8 +25155,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Submit
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
-  m_sharedMaterial: {fileID: -5205639276191846402, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -27160,8 +27172,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Onion
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
-  m_sharedMaterial: {fileID: -5205639276191846402, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -28482,6 +28494,9 @@ MonoBehaviour:
   - {fileID: 7553017924586525897}
   - {fileID: 7092635891141512000}
   - {fileID: 7889453829259327672}
+  slotDropsP2: []
+  targetGroup: 0
+  slotsItemP2: []
   ingredientName: Bun
   itemValue: 
   targetArea: {fileID: 5991771666511379446}
@@ -28768,7 +28783,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7705835830082721877}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -28847,6 +28862,9 @@ MonoBehaviour:
   - {fileID: 7553017924586525897}
   - {fileID: 7092635891141512000}
   - {fileID: 7889453829259327672}
+  slotDropsP2: []
+  targetGroup: 0
+  slotsItemP2: []
   ingredientName: Meat
   itemValue: 
   targetArea: {fileID: 5991771666511379446}
@@ -29732,8 +29750,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Tomato
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
-  m_sharedMaterial: {fileID: -5205639276191846402, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -30162,8 +30180,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Lettuce
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
-  m_sharedMaterial: {fileID: -5205639276191846402, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -30560,8 +30578,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Meat
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
-  m_sharedMaterial: {fileID: -5205639276191846402, guid: 1041eb8777170424abf5a11afa3a4dd5, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -31662,6 +31680,9 @@ MonoBehaviour:
   - {fileID: 7553017924586525897}
   - {fileID: 7092635891141512000}
   - {fileID: 7889453829259327672}
+  slotDropsP2: []
+  targetGroup: 0
+  slotsItemP2: []
   ingredientName: Lettuce
   itemValue: 
   targetArea: {fileID: 5991771666511379446}
