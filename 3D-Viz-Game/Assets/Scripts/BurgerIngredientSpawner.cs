@@ -34,10 +34,16 @@ public class BurgerIngredientSpawner : MonoBehaviour
     private List<GameObject> activeFoodItems = new List<GameObject>();
     private List<int> correctNumbers = new List<int>();
     private bool hasPlacedItem = false;
+    private bool waitingForResultContinue = false;
 
     private string[] ingredientNames = { "Lettuce", "Meat", "Cheese", "Tomato", "Onions", "Bun" };
 
     void Start()
+    {
+        // wait for tutorial and countdown to finish before starting the game
+    }
+
+    public void BeginChefGame()
     {
         GenerateFullOrder();
         DisplayFullOrder();
@@ -163,6 +169,20 @@ public class BurgerIngredientSpawner : MonoBehaviour
 
     public void Next()
     {
+        //if we're looking at the results of a wrong burger
+        //Next means "continue" to the next burger, so we need to reset the state
+        if (waitingForResultContinue)
+        {
+            waitingForResultContinue = false;
+
+            if (nextButton != null)
+                nextButton.interactable = false;
+
+            StartCoroutine(ExplodeBurgerAndReset());
+            return;
+        }
+
+
         if (!hasPlacedItem)
         {
             Debug.Log("Must place an item before continuing.");
@@ -221,17 +241,38 @@ public class BurgerIngredientSpawner : MonoBehaviour
             }
         }
 
-        // ✅ Score here using your existing correctness result
+        // Score here using your existing correctness result
         if (GameSession.Instance != null)
         {
             GameSession.Instance.SetMode(GameMode.Burger);   // safety
             GameSession.Instance.CompleteTask(isCorrect);    // +100 or −10 (+bonus if fast)
         }
 
-        if (isCorrect) StartCoroutine(SlideBurgerOffScreen(Vector3.right));
-        else StartCoroutine(ExplodeBurgerAndReset());
+        if (isCorrect)
+        {
+            // Correct burger can continue automatically
+            if (nextButton != null)
+                nextButton.interactable = false;
 
-        if (nextButton != null) nextButton.interactable = false;
+            StartCoroutine(SlideBurgerOffScreen(Vector3.right));
+        }
+        else
+        {
+            // WRONG:
+            // Don't reset yet. Let the player inspect the ticket.
+            waitingForResultContinue = true;
+
+            if (nextButton != null)
+            {
+                nextButton.interactable = true;
+
+                TextMeshProUGUI buttonText =
+            nextButton.GetComponentInChildren<TextMeshProUGUI>();
+
+                if (buttonText != null)
+                    buttonText.text = "Next";
+            }
+        }
     }
 
     private IEnumerator SlideBurgerOffScreen(Vector3 direction, float distance = 10f, float duration = 0.5f)
