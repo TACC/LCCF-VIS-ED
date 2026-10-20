@@ -7,11 +7,20 @@ using System.Linq;
 
 public class BurgerIngredientSpawner : MonoBehaviour
 {
+    [Header("Burger Play Mode")]
+    [SerializeField]
+    private BurgerPlayMode burgerPlayMode =
+    BurgerPlayMode.Guided;
+
+    public BurgerPlayMode BurgerPlayMode => burgerPlayMode;
     [Header("Ingredient Prefabs (Order Matters)")]
     public GameObject[] foodPrefabs;
 
     [Header("Spawn Points")]
     public Transform[] spawnPoints;
+
+    [Header("Full Build Spawn Points")]
+    [SerializeField] private Transform[] fullBuildSpawnPoints;
 
     [Header("UI")]
     public Button nextButton;
@@ -38,16 +47,27 @@ public class BurgerIngredientSpawner : MonoBehaviour
 
     private string[] ingredientNames = { "Lettuce", "Meat", "Cheese", "Tomato", "Onions", "Bun" };
 
+
+
     void Start()
     {
         // wait for tutorial and countdown to finish before starting the game
     }
-
     public void BeginChefGame()
     {
+        currentStep = 0;
+
         GenerateFullOrder();
         DisplayFullOrder();
-        SpawnRound();
+
+        if (burgerPlayMode == BurgerPlayMode.Guided)
+        {
+            SpawnRound();
+        }
+        else
+        {
+            SpawnFullBuild();
+        }
     }
 
     public void SpawnRound()
@@ -171,6 +191,7 @@ public class BurgerIngredientSpawner : MonoBehaviour
     {
         //if we're looking at the results of a wrong burger
         //Next means "continue" to the next burger, so we need to reset the state
+
         if (waitingForResultContinue)
         {
             waitingForResultContinue = false;
@@ -188,6 +209,11 @@ public class BurgerIngredientSpawner : MonoBehaviour
             Debug.Log("Must place an item before continuing.");
             return;
         }
+        // if (burgerPlayMode == BurgerPlayMode.FullBuild)
+        // {
+        //     Submit();
+        //     return;
+        // }
 
         StrikeThroughCurrentIngredient();
 
@@ -390,5 +416,81 @@ public class BurgerIngredientSpawner : MonoBehaviour
             return;
 
         orderText.text = $"<s>{orderText.text}</s>";
+    }
+
+    [ContextMenu("Test Full Build Spawn")]
+    private void SpawnFullBuild()
+    {
+        ClearUnusedItems();
+
+        List<GameObject> prefabsToSpawn = new List<GameObject>();
+        List<int> numbersToSpawn = new List<int>();
+
+        for (int i = 0; i < ingredientSequence.Length; i++)
+        {
+            int prefabIndex = ingredientSequence[i];
+            GameObject prefab = foodPrefabs[prefabIndex];
+
+            int correctNumber = correctNumbers[i];
+
+            // Add correct version
+            prefabsToSpawn.Add(prefab);
+            numbersToSpawn.Add(correctNumber);
+
+            // Add two wrong versions
+            List<int> wrongNumbers =
+                GenerateUniqueRandomNumbersExcluding(
+                    2,
+                    1,
+                    99,
+                    correctNumber
+                );
+
+            prefabsToSpawn.Add(prefab);
+            numbersToSpawn.Add(wrongNumbers[0]);
+
+            prefabsToSpawn.Add(prefab);
+            numbersToSpawn.Add(wrongNumbers[1]);
+        }
+
+        // Spawn them into the 18 FullBuild points
+        for (int i = 0; i < fullBuildSpawnPoints.Length; i++)
+        {
+            if (i >= prefabsToSpawn.Count)
+                break;
+
+            Transform spawnPoint = fullBuildSpawnPoints[i];
+
+            GameObject prefab = prefabsToSpawn[i];
+            int number = numbersToSpawn[i];
+
+            GameObject clone = Instantiate(
+                prefab,
+                spawnPoint.position,
+                spawnPoint.rotation
+            );
+
+            clone.transform.SetParent(spawnPoint, false);
+            clone.transform.localPosition = Vector3.zero;
+            clone.transform.localRotation = prefab.transform.localRotation;
+
+            clone.transform.localScale =
+                prefab.transform.localScale;
+
+            DragHandler3D drag =
+                clone.GetComponent<DragHandler3D>();
+
+            if (drag != null)
+            {
+                drag.mode = DragHandler3D.DragMode.BurgerBuild;
+                drag.SetSpawnPoint(spawnPoint);
+                drag.SetDragCamera(stationCamera);
+                drag.MarkInStack(false);
+            }
+
+            SetNumberOnPrefab(clone, number);
+
+            activeFoodItems.Add(clone);
+        }
     }
 }

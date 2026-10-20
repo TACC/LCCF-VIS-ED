@@ -10,7 +10,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(SortableItem3D))]
 public class DragHandler3D : MonoBehaviour
 {
-    public enum DragMode  { BurgerBuild, Sorting }
+    public enum DragMode { BurgerBuild, Sorting }
     public enum DepthMode { SurfacePlane, CameraPlane, WorldZ }
 
     [Header("Mode")]
@@ -28,8 +28,8 @@ public class DragHandler3D : MonoBehaviour
     public bool useClamps = false;
     public Vector2 sortingClampX = new Vector2(-3f, 3f);
     public Vector2 sortingClampY = new Vector2(-1f, 2.8f);
-    public Vector2 burgerClampX  = new Vector2(-3.3f, 3.3f);
-    public Vector2 burgerClampY  = new Vector2(0.5f, 2.5f);
+    public Vector2 burgerClampX = new Vector2(-3.3f, 3.3f);
+    public Vector2 burgerClampY = new Vector2(0.5f, 2.5f);
 
     [Header("Physics")]
     public bool keepKinematicAlways = true;
@@ -113,9 +113,30 @@ public class DragHandler3D : MonoBehaviour
         StopAllCoroutines();
 
         Ray ray = cam.ScreenPointToRay(PointerPos());
-        if (!Physics.Raycast(ray, out var hit, 1000f, ~0, QueryTriggerInteraction.Collide)) return;
-        if (hit.collider.gameObject != gameObject) return;
 
+        Collider ownCollider = GetComponent<Collider>();
+
+        if (ownCollider == null)
+        {
+            Debug.LogError($"No Collider found on {gameObject.name}", this);
+            return;
+        }
+
+        if (!ownCollider.Raycast(ray, out RaycastHit hit, 1000f))
+        {
+            return;
+        }
+
+        // Stack rule:
+        // only the current top ingredient can be removed.
+        if (mode == DragMode.BurgerBuild &&
+            IsInStack &&
+            stackManager != null &&
+            !stackManager.IsTopMostItem(gameObject))
+        {
+            return;
+        }
+        
         if (depthMode == DepthMode.SurfacePlane)
         {
             Vector3 n = dragSurface
@@ -136,11 +157,17 @@ public class DragHandler3D : MonoBehaviour
         grabOffset = transform.position - hit.point;
         dragging = true;
 
+        if (mode == DragMode.BurgerBuild && IsInStack)
+        {
+            stackManager?.RemoveFromStack(gameObject);
+            MarkInStack(false);
+        }
+
         // stop physics BEFORE making kinematic (prevents warnings)
         if (rb && !keepKinematicAlways)
         {
 #if UNITY_6000_0_OR_NEWER
-            if (!rb.isKinematic) rb.linearVelocity  = Vector3.zero;
+            if (!rb.isKinematic) rb.linearVelocity = Vector3.zero;
 #else
             if (!rb.isKinematic) rb.velocity        = Vector3.zero;
 #endif
@@ -151,11 +178,12 @@ public class DragHandler3D : MonoBehaviour
 
     void OnMouseUp()
     {
+        if (!dragging) return;
         if (rb && !keepKinematicAlways) rb.isKinematic = true;
 
         if (mode == DragMode.Sorting)
         {
-            var mgr  = ConveyorManager3D.Instance;
+            var mgr = ConveyorManager3D.Instance;
             var item = sortable;
             bool inZone = (mgr && mgr.IsInConveyorZone(transform.position));
             if (inZone && item != null)
@@ -170,8 +198,28 @@ public class DragHandler3D : MonoBehaviour
         }
 
         // BurgerBuild
-        if (isOverDropZone && stackManager) stackManager.StackItem(gameObject);
-        else                                ResetToSpawnPoint();
+        if (isOverDropZone && stackManager)
+        {
+            // Remember where the ingredient currently is
+            Vector3 worldPosition = transform.position;
+            Quaternion worldRotation = transform.rotation;
+
+            // Stop inheriting the spawn point's scale
+            transform.SetParent(null, false);
+
+            // Keep it visually in the same place
+            transform.position = worldPosition;
+            transform.rotation = worldRotation;
+
+            // Restore its normal ingredient size
+            transform.localScale = initialLocalScale;
+
+            stackManager.StackItem(gameObject);
+        }
+        else
+        {
+            ResetToSpawnPoint();
+        }
 
         dragging = false;
     }
@@ -201,7 +249,7 @@ public class DragHandler3D : MonoBehaviour
             }
 
             if (rb) rb.MovePosition(p);
-            else    transform.position = p;
+            else transform.position = p;
         }
     }
 
@@ -234,13 +282,13 @@ public class DragHandler3D : MonoBehaviour
         Vector3 startPos = transform.position;
         Quaternion startRot = transform.rotation;
         Vector3 endPos = spawnPoint.position;
-        Quaternion endRot = (mode == DragMode.Sorting) ? startRot : spawnPoint.rotation;
+        Quaternion endRot = (mode == DragMode.Sorting) ? startRot : originalRotation;
 
         // 1) Silence physics
         if (rb)
         {
 #if UNITY_6000_0_OR_NEWER
-            if (!rb.isKinematic) rb.linearVelocity  = Vector3.zero;
+            if (!rb.isKinematic) rb.linearVelocity = Vector3.zero;
 #else
             if (!rb.isKinematic) rb.velocity        = Vector3.zero;
 #endif
@@ -277,10 +325,6 @@ public class DragHandler3D : MonoBehaviour
         transform.SetParent(spawnPoint, worldPositionStays: true);
         transform.localScale = initialLocalScale;
 
-        // (Optional tidy) ensure locals are clean; this won't visually change if we are exactly at 'endPos'
-        transform.localPosition = Vector3.zero;
-        if (mode == DragMode.BurgerBuild) transform.localRotation = Quaternion.identity;
-
         // 5) Re-enable colliders next frame
         yield return null;
         for (int i = 0; i < cols.Length; i++) if (cols[i]) cols[i].enabled = true;
@@ -290,14 +334,14 @@ public class DragHandler3D : MonoBehaviour
 
     public void SetDragCamera(Camera cam)
     {
-    dragCamera = cam;
+        dragCamera = cam;
     }
 
     public void SetSpawnPoint(Transform point)
     {
         spawnPoint = point;
-        originalRotation   = transform.rotation;
-        initialLocalScale  = transform.localScale;
+        originalRotation = transform.rotation;
+        initialLocalScale = transform.localScale;
     }
 
     public void MarkInStack(bool value)

@@ -39,22 +39,22 @@ public class BurgerStackManager : MonoBehaviour
 
     // 🔹 Call this from your Submit button/controller with your computed result
     public void OnSubmitBurger(bool isCorrect)
-{
-    Debug.Log($"[BurgerStackManager] Submit pressed. isCorrect={isCorrect}");
+    {
+        Debug.Log($"[BurgerStackManager] Submit pressed. isCorrect={isCorrect}");
 
-    if (GameSession.Instance != null)
-    {
-        int before = GameSession.Instance.Score;
-        GameSession.Instance.SetMode(GameMode.Burger);   // safety
-        GameSession.Instance.CompleteTask(isCorrect);    // +100/−10 (+bonus if fast)
-        Debug.Log($"[BurgerStackManager] Score {before} -> {GameSession.Instance.Score}");
+        if (GameSession.Instance != null)
+        {
+            int before = GameSession.Instance.Score;
+            GameSession.Instance.SetMode(GameMode.Burger);   // safety
+            GameSession.Instance.CompleteTask(isCorrect);    // +100/−10 (+bonus if fast)
+            Debug.Log($"[BurgerStackManager] Score {before} -> {GameSession.Instance.Score}");
+        }
+        else
+        {
+            Debug.LogWarning("[BurgerStackManager] No GameSession instance.");
+        }
+        // slide/explode handled elsewhere
     }
-    else
-    {
-        Debug.LogWarning("[BurgerStackManager] No GameSession instance.");
-    }
-    // slide/explode handled elsewhere
-}
 
 
     public void StackItem(GameObject newItem)
@@ -107,10 +107,20 @@ public class BurgerStackManager : MonoBehaviour
         var drag = item.GetComponent<DragHandler3D>();
         if (drag != null)
         {
-            drag.enabled = false;
             drag.MarkInStack(true);
-        }
 
+            if (spawner != null &&
+                spawner.BurgerPlayMode == BurgerPlayMode.FullBuild)
+            {
+                // In FullBuild, let the player drag ingredients back off.
+                drag.enabled = true;
+            }
+            else
+            {
+                // Guided keeps the old behavior.
+                drag.enabled = false;
+            }
+        }
         StartCoroutine(MoveToTarget(item.transform, point.position, point.rotation));
 
         // tell the spawner this choice was used; it should NOT be cleared on Next
@@ -173,4 +183,17 @@ public class BurgerStackManager : MonoBehaviour
     {
         return stackedItems;
     }
+
+    public bool IsTopMostItem(GameObject item)
+    {
+        for (int i = stackedItems.Length - 1; i >= 0; i--)
+        {
+            if (stackedItems[i] != null)
+                return stackedItems[i] == item;
+        }
+
+        return false;
+    }
+
+    
 }
