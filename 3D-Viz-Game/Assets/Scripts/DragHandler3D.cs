@@ -51,7 +51,6 @@ public class DragHandler3D : MonoBehaviour
 
     // Burger-only
     private bool isOverDropZone;
-    private Transform currentDropTarget;
 
     [SerializeField] private int ingredientValueBacking;
     public int ingredientValue
@@ -136,7 +135,7 @@ public class DragHandler3D : MonoBehaviour
         {
             return;
         }
-        
+
         if (depthMode == DepthMode.SurfacePlane)
         {
             Vector3 n = dragSurface
@@ -357,7 +356,6 @@ public class DragHandler3D : MonoBehaviour
         if (other.CompareTag("DropZone") || other.GetComponent<DropTarget>())
         {
             isOverDropZone = true;
-            currentDropTarget = other.transform;
         }
     }
 
@@ -367,7 +365,6 @@ public class DragHandler3D : MonoBehaviour
         if (other.CompareTag("DropZone") || other.GetComponent<DropTarget>())
         {
             isOverDropZone = false;
-            currentDropTarget = null;
         }
     }
 }

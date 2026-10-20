@@ -7,104 +7,152 @@ public class BurgerStackManager : MonoBehaviour
     [Header("Stack Positions (Ordered Bottom to Top)")]
     public Transform[] stackPositions;
 
-    [SerializeField] private BurgerIngredientSpawner spawner;
+    [Header("Final Compact Burger Positions")]
+    [SerializeField] private Transform[] finalBurgerPositions;
 
+    [SerializeField] private BurgerIngredientSpawner spawner;
     private GameObject[] stackedItems;
 
     void Awake()
     {
-        stackedItems = new GameObject[stackPositions.Length];
+        EnsureStackArray();
     }
-
-    void Start()
-    {
-        EnsureSessionAndMode();
-        // When your spawner starts a new burger, call BeginBurgerRound() below.
-    }
-
-    private void EnsureSessionAndMode()
-    {
-        if (GameSession.Instance == null) return;
-        if (!GameSession.Instance.SessionRunning)
-            GameSession.Instance.StartSession(150);
-        GameSession.Instance.SetMode(GameMode.Burger);
-    }
-
-    // 🔹 Call this when a NEW burger round begins (after spawning the bottom bun/options)
-    public void BeginBurgerRound()
-    {
-        EnsureSessionAndMode();
-        if (GameSession.Instance != null) GameSession.Instance.StartTask(); // hidden 15s timer
-    }
-
-    // 🔹 Call this from your Submit button/controller with your computed result
-    public void OnSubmitBurger(bool isCorrect)
-    {
-        Debug.Log($"[BurgerStackManager] Submit pressed. isCorrect={isCorrect}");
-
-        if (GameSession.Instance != null)
-        {
-            int before = GameSession.Instance.Score;
-            GameSession.Instance.SetMode(GameMode.Burger);   // safety
-            GameSession.Instance.CompleteTask(isCorrect);    // +100/−10 (+bonus if fast)
-            Debug.Log($"[BurgerStackManager] Score {before} -> {GameSession.Instance.Score}");
-        }
-        else
-        {
-            Debug.LogWarning("[BurgerStackManager] No GameSession instance.");
-        }
-        // slide/explode handled elsewhere
-    }
-
 
     public void StackItem(GameObject newItem)
     {
+        EnsureStackArray();
         string newType = CleanType(newItem.name);
 
-        // Replace same-type item if found
+        // FULL BUILD
+        if (spawner != null &&
+            spawner.BurgerPlayMode == BurgerPlayMode.FullBuild)
+        {
+            // Find the current top of the stack.
+            int topIndex = -1;
+
+            for (int i = stackedItems.Length - 1; i >= 0; i--)
+            {
+                if (stackedItems[i] != null)
+                {
+                    topIndex = i;
+                    break;
+                }
+            }
+
+            // If the new ingredient matches the TOP ingredient,
+            // replace only that top ingredient.
+            if (topIndex >= 0)
+            {
+                GameObject topItem = stackedItems[topIndex];
+
+                if (CleanType(topItem.name) == newType)
+                {
+                    EvictToSpawn(topItem);
+
+                    stackedItems[topIndex] = newItem;
+
+                    TextMeshProUGUI label =
+                        newItem.GetComponentInChildren<TextMeshProUGUI>();
+
+                    if (label != null)
+                        label.enabled = false;
+
+                    MoveAndMark(newItem, topIndex);
+                    return;
+                }
+            }
+
+            // If this ingredient type already exists LOWER in the stack,
+            // don't allow another copy to be pushed.
+            for (int i = 0; i < stackedItems.Length; i++)
+            {
+                if (stackedItems[i] != null &&
+                    CleanType(stackedItems[i].name) == newType)
+                {
+
+                    DragHandler3D drag =
+                        newItem.GetComponent<DragHandler3D>();
+
+                    if (drag != null)
+                        drag.ResetToSpawnPoint();
+
+                    return;
+                }
+            }
+
+            int nextIndex = topIndex + 1;
+
+            if (nextIndex < stackedItems.Length)
+            {
+                stackedItems[nextIndex] = newItem;
+
+                TextMeshProUGUI label =
+                    newItem.GetComponentInChildren<TextMeshProUGUI>();
+
+                if (label != null)
+                    label.enabled = false;
+
+                MoveAndMark(newItem, nextIndex);
+                return;
+            }
+
+            DragHandler3D fullDrag =
+                newItem.GetComponent<DragHandler3D>();
+
+            if (fullDrag != null)
+                fullDrag.ResetToSpawnPoint();
+
+            return;
+        }
+
         for (int i = 0; i < stackedItems.Length; i++)
         {
             GameObject existing = stackedItems[i];
-            if (existing != null && CleanType(existing.name) == newType)
+
+            if (existing != null &&
+                CleanType(existing.name) == newType)
             {
-                // ⬅️ send old piece back to spawn AND re-add to active list
                 EvictToSpawn(existing);
 
-                // occupy this slot with the new item
                 stackedItems[i] = newItem;
 
-                // hide number label on the newly stacked item
-                var labelNew = newItem.GetComponentInChildren<TextMeshProUGUI>();
-                if (labelNew != null) labelNew.enabled = false;
+                TextMeshProUGUI label =
+                    newItem.GetComponentInChildren<TextMeshProUGUI>();
 
-                MoveAndMark(newItem, stackPositions[i]);
+                if (label != null)
+                    label.enabled = false;
+
+                MoveAndMark(newItem, i);
                 return;
             }
         }
 
-        // Stack in next available empty slot
+        // Guided: place in next empty slot.
         for (int i = 0; i < stackedItems.Length; i++)
         {
             if (stackedItems[i] == null)
             {
                 stackedItems[i] = newItem;
 
-                var labelNew = newItem.GetComponentInChildren<TextMeshProUGUI>();
-                if (labelNew != null) labelNew.enabled = false;
+                TextMeshProUGUI label =
+                    newItem.GetComponentInChildren<TextMeshProUGUI>();
 
-                MoveAndMark(newItem, stackPositions[i]);
+                if (label != null)
+                    label.enabled = false;
+
+                MoveAndMark(newItem, i);
                 return;
             }
         }
 
-        Debug.LogWarning("No empty stack slots available.");
     }
 
     private static string CleanType(string raw) => raw.Replace("(Clone)", "").Trim();
 
-    private void MoveAndMark(GameObject item, Transform point)
+    private void MoveAndMark(GameObject item, int stackIndex)
     {
         var drag = item.GetComponent<DragHandler3D>();
+
         if (drag != null)
         {
             drag.MarkInStack(true);
@@ -112,21 +160,28 @@ public class BurgerStackManager : MonoBehaviour
             if (spawner != null &&
                 spawner.BurgerPlayMode == BurgerPlayMode.FullBuild)
             {
-                // In FullBuild, let the player drag ingredients back off.
                 drag.enabled = true;
             }
             else
             {
-                // Guided keeps the old behavior.
                 drag.enabled = false;
             }
         }
-        StartCoroutine(MoveToTarget(item.transform, point.position, point.rotation));
 
-        // tell the spawner this choice was used; it should NOT be cleared on Next
-        spawner?.NotifyIngredientPlaced(item);
+        Transform point = stackPositions[stackIndex];
+
+        StartCoroutine(
+            MoveToTarget(
+                item.transform,
+                point.position,
+                point.rotation
+            )
+        );
+
+        spawner?.NotifyIngredientPlaced();
         spawner?.RemoveFromActiveItems(item);
     }
+
 
     private IEnumerator MoveToTarget(Transform item, Vector3 pos, Quaternion rot)
     {
@@ -148,23 +203,20 @@ public class BurgerStackManager : MonoBehaviour
         item.rotation = rot;
     }
 
-    // 🔧 unified eviction path that ensures the item is cleared AND tracked for cleanup
     private void EvictToSpawn(GameObject item)
     {
         var drag = item.GetComponent<DragHandler3D>();
+
         if (drag != null)
         {
             drag.enabled = true;
-            drag.MarkInStack(false);      // back to spawn state (also sets tag)
-            drag.ResetToSpawnPoint();     // handles reparent + snap/lerp back
+            drag.ResetToSpawnPoint();
         }
 
-        // show its number again in spawn
         var label = item.GetComponentInChildren<TextMeshProUGUI>();
-        if (label != null) label.enabled = true;
 
-        // so ClearUnusedItems() can destroy it on Next
-        spawner?.ReAddToActiveItems(item);
+        if (label != null)
+            label.enabled = true;
     }
 
     public void RemoveFromStack(GameObject item)
@@ -174,6 +226,8 @@ public class BurgerStackManager : MonoBehaviour
             if (stackedItems[i] == item)
             {
                 stackedItems[i] = null;
+                spawner?.ReAddToActiveItems(item);
+
                 break;
             }
         }
@@ -195,5 +249,23 @@ public class BurgerStackManager : MonoBehaviour
         return false;
     }
 
-    
+
+    private void EnsureStackArray()
+    {
+        int neededSize =
+            stackPositions != null
+            ? stackPositions.Length
+            : 0;
+
+        if (stackedItems == null ||
+            stackedItems.Length != neededSize)
+        {
+            stackedItems = new GameObject[neededSize];
+        }
+    }
+
+    public Transform[] GetFinalBurgerPositions()
+    {
+        return finalBurgerPositions;
+    }
 }

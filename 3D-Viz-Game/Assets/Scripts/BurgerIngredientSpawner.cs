@@ -47,12 +47,6 @@ public class BurgerIngredientSpawner : MonoBehaviour
 
     private string[] ingredientNames = { "Lettuce", "Meat", "Cheese", "Tomato", "Onions", "Bun" };
 
-
-
-    void Start()
-    {
-        // wait for tutorial and countdown to finish before starting the game
-    }
     public void BeginChefGame()
     {
         currentStep = 0;
@@ -189,6 +183,16 @@ public class BurgerIngredientSpawner : MonoBehaviour
 
     public void Next()
     {
+
+        // FULL BUILD:
+        // The button checks the entire burger.
+        if (burgerPlayMode == BurgerPlayMode.FullBuild)
+        {
+            Submit();
+            return;
+        }
+
+        // GUIDED
         //if we're looking at the results of a wrong burger
         //Next means "continue" to the next burger, so we need to reset the state
 
@@ -209,11 +213,6 @@ public class BurgerIngredientSpawner : MonoBehaviour
             Debug.Log("Must place an item before continuing.");
             return;
         }
-        // if (burgerPlayMode == BurgerPlayMode.FullBuild)
-        // {
-        //     Submit();
-        //     return;
-        // }
 
         StrikeThroughCurrentIngredient();
 
@@ -221,7 +220,7 @@ public class BurgerIngredientSpawner : MonoBehaviour
         SpawnRound();
     }
 
-    public void NotifyIngredientPlaced(GameObject placedItem)
+    public void NotifyIngredientPlaced()
     {
         hasPlacedItem = true;
         if (nextButton != null) nextButton.interactable = true;
@@ -232,37 +231,62 @@ public class BurgerIngredientSpawner : MonoBehaviour
         GameObject[] items = stackManager.GetStackedItems();
         if (items.Any(i => i == null))
         {
-            Debug.LogWarning("Stack incomplete!");
             return;
         }
 
         bool isCorrect = true;
+
         for (int i = 0; i < items.Length; i++)
         {
-            TextMeshProUGUI label = items[i].GetComponentInChildren<TextMeshProUGUI>();
-            if (label == null) continue;
+            GameObject item = items[i];
 
-            int stackNumber = int.Parse(label.text);
+            TextMeshProUGUI label =
+                item.GetComponentInChildren<TextMeshProUGUI>(true);
+
+            int stackNumber = -1;
+
+            if (label != null)
+                int.TryParse(label.text, out stackNumber);
+
             int correctNumber = correctNumbers[i];
-            if (orderTextSlots.Length > i)
+
+            // Which prefab SHOULD be in this stack position?
+            int expectedPrefabIndex = ingredientSequence[i];
+
+            GameObject expectedPrefab =
+                foodPrefabs[expectedPrefabIndex];
+
+            string placedType =
+                CleanIngredientName(item.name);
+
+            string expectedType =
+                CleanIngredientName(expectedPrefab.name);
+
+            bool correctType =
+                placedType == expectedType;
+
+            bool correctValue =
+                stackNumber == correctNumber;
+
+            bool slotCorrect =
+                correctType && correctValue;
+
+            if (!slotCorrect)
+                isCorrect = false;
+
+            if (i < orderTextSlots.Length)
             {
-                bool correct = stackNumber == correctNumber;
+                string name = ingredientNames[i];
 
-                string name = i < ingredientNames.Length
-                    ? ingredientNames[i]
-                    : "???";
-
-                if (correct)
+                if (slotCorrect)
                 {
                     orderTextSlots[i].text =
-                        $"<color=green><s>{name}: {correctNumbers[i]}</s></color>";
+                        $"<color=green><s>{name}: {correctNumber}</s></color>";
                 }
                 else
                 {
                     orderTextSlots[i].text =
-                        $"<color=red><s>{name}: {correctNumbers[i]}</s></color>";
-
-                    isCorrect = false;
+                        $"<color=red><s>{name}: {correctNumber}</s></color>";
                 }
             }
         }
@@ -276,16 +300,23 @@ public class BurgerIngredientSpawner : MonoBehaviour
 
         if (isCorrect)
         {
-            // Correct burger can continue automatically
-            if (nextButton != null)
-                nextButton.interactable = false;
+            if (nextButton != null) nextButton.interactable = false;
 
-            StartCoroutine(SlideBurgerOffScreen(Vector3.right));
+            StartCoroutine(AssembleCorrectBurger(items));
         }
         else
         {
-            // WRONG:
-            // Don't reset yet. Let the player inspect the ticket.
+            if (burgerPlayMode == BurgerPlayMode.FullBuild)
+            {
+                waitingForResultContinue = false;
+
+                if (nextButton != null)
+                    nextButton.interactable = true;
+
+                return;
+            }
+
+            // Existing Guided behavior
             waitingForResultContinue = true;
 
             if (nextButton != null)
@@ -293,12 +324,93 @@ public class BurgerIngredientSpawner : MonoBehaviour
                 nextButton.interactable = true;
 
                 TextMeshProUGUI buttonText =
-            nextButton.GetComponentInChildren<TextMeshProUGUI>();
+                    nextButton.GetComponentInChildren<TextMeshProUGUI>();
 
                 if (buttonText != null)
                     buttonText.text = "Next";
             }
         }
+    }
+
+    private IEnumerator AssembleCorrectBurger(GameObject[] items)
+    {
+        Transform[] finalPositions = stackManager.GetFinalBurgerPositions();
+
+        if (finalPositions == null ||
+            finalPositions.Length < items.Length)
+        {
+            Debug.LogError("Final burger positions are not assigned.");
+            yield break;
+        }
+
+        float duration = 0.5f;
+
+        Vector3[] startPositions = new Vector3[items.Length];
+        Quaternion[] startRotations = new Quaternion[items.Length];
+
+        for (int i = 0; i < items.Length; i++)
+        {
+            if (items[i] == null)
+                continue;
+
+            startPositions[i] = items[i].transform.position;
+            startRotations[i] = items[i].transform.rotation;
+
+            DragHandler3D drag =
+                items[i].GetComponent<DragHandler3D>();
+
+            if (drag != null)
+                drag.enabled = false;
+        }
+
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (items[i] == null)
+                    continue;
+
+                Transform target = finalPositions[i];
+
+                items[i].transform.position = Vector3.Lerp(
+                    startPositions[i],
+                    target.position,
+                    t
+                );
+
+                items[i].transform.rotation = Quaternion.Slerp(
+                    startRotations[i],
+                    target.rotation,
+                    t
+                );
+            }
+
+            yield return null;
+        }
+
+        for (int i = 0; i < items.Length; i++)
+        {
+            if (items[i] == null)
+                continue;
+
+            items[i].transform.position =
+                finalPositions[i].position;
+
+            items[i].transform.rotation =
+                finalPositions[i].rotation;
+        }
+        yield return new WaitForSeconds(0.75f);
+
+        yield return StartCoroutine(SlideBurgerOffScreen(Vector3.right));
+    }
+    private string CleanIngredientName(string raw)
+    {
+        return raw.Replace("(Clone)", "").Trim();
     }
 
     private IEnumerator SlideBurgerOffScreen(Vector3 direction, float distance = 10f, float duration = 0.5f)
@@ -334,7 +446,15 @@ public class BurgerIngredientSpawner : MonoBehaviour
         currentStep = 0;
         GenerateFullOrder();
         DisplayFullOrder();
-        SpawnRound();
+
+        if (burgerPlayMode == BurgerPlayMode.FullBuild)
+        {
+            SpawnFullBuild();
+        }
+        else
+        {
+            SpawnRound();
+        }
     }
 
     private IEnumerator ExplodeBurgerAndReset()
@@ -418,7 +538,6 @@ public class BurgerIngredientSpawner : MonoBehaviour
         orderText.text = $"<s>{orderText.text}</s>";
     }
 
-    [ContextMenu("Test Full Build Spawn")]
     private void SpawnFullBuild()
     {
         ClearUnusedItems();
