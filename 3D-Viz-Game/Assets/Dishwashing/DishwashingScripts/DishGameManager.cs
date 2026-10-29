@@ -9,20 +9,10 @@ public class DishGameManager : MonoBehaviour
     public DishlineController dishline;
     public GameObject parallelize;  //parallelize button itself
     public BrushManager brushes;
+    public DishwashingUI ui;
 
     [Header("Round")]
     public float roundDuration = 20f;
-
-    [Header("HUD (optional)")]
-    public TMP_Text timerText;
-    public TMP_Text scoreText;
-
-    [Header("Results Panel (optional)")]
-    public GameObject transitionPanel;
-    public TMP_Text resultsTitleText;
-    public TMP_Text resultsBodyText;
-    public Button resultsCloseButton;
-
     float timeLeft;
     int score;       // number of plates cleaned
     bool running;
@@ -32,7 +22,8 @@ public class DishGameManager : MonoBehaviour
     void Start()
     {
         if (!dishline) dishline = Object.FindAnyObjectByType<DishlineController>();
-        HideResults();
+        if (!ui) ui = Object.FindAnyObjectByType<DishwashingUI>();
+
         StartRound();
         continueRound = false;
         parallelized = false;
@@ -41,6 +32,8 @@ public class DishGameManager : MonoBehaviour
 
     public void StartRound()
     {
+        // check for 2nd play through, increased spawning speed, more plates, and multiple parallel
+
         timeLeft = roundDuration;
         score = 0;
         running = true;
@@ -52,8 +45,8 @@ public class DishGameManager : MonoBehaviour
             dishline.StartSpawning();
         }
 
-        UpdateHUD();
-        HideResults();
+        ui.HideResults();
+        //UpdateHUD();
     }
 
     public void EndRound()
@@ -72,15 +65,17 @@ public class DishGameManager : MonoBehaviour
         {
             dishline.OnPlateStacked -= HandlePlateStacked;
             dishline.StopSpawning();
-
         }
+
+        //update variables
+
         Debug.Log("round over");
-        ShowResults();
-    }
-
-    private void fade()
-    {
-
+        //ShowResults();
+        if (continueRound && !running)
+        {
+            continueRound = true;
+            StartRound();
+        }
     }
 
     public void ParaButton()
@@ -101,66 +96,17 @@ public class DishGameManager : MonoBehaviour
             EndRound();
         }
 
-        if (continueRound && !running)
-        {
-            continueRound = false;
-            StartRound();
-        }
-
         if (score >= 5 && !parallelized)
         {
             parallelize.SetActive(true);
         }
 
-        UpdateHUD();
+        //UpdateHUD();
     }
 
     void HandlePlateStacked(PlateController plate)
     {
         score++;
-        UpdateHUD();
-    }
-
-    void UpdateHUD()
-    {
-        if (timerText) timerText.text = FormatTime(Mathf.CeilToInt(timeLeft));
-        if (scoreText) scoreText.text = score.ToString();
-    }
-
-    // result helpers
-    void ShowResults()
-    {
-        // transition screen, show explaination text and video, continue button to advance.
-        if (!transitionPanel) return;
-
-        transitionPanel.SetActive(true);
-
-        if (resultsTitleText)
-            resultsTitleText.text = "Shift Results";
-
-        // time used is (roundDuration - timeLeft)
-        int timeUsed = Mathf.RoundToInt(roundDuration - timeLeft);
-        if (resultsBodyText)
-        {
-            resultsBodyText.text = $"Plates cleaned: {score}\nTime used: {FormatTime(timeUsed)}";
-        }
-
-        if (resultsCloseButton)
-        {
-            resultsCloseButton.onClick.RemoveAllListeners();
-            resultsCloseButton.onClick.AddListener(HideResults);
-        }
-    }
-
-    public void HideResults()
-    {
-        if (transitionPanel) transitionPanel.SetActive(false);
-    }
-
-    string FormatTime(int totalSeconds)
-    {
-        int m = totalSeconds / 60;
-        int s = totalSeconds % 60;
-        return $"{m:00}:{s:00}";
+        //UpdateHUD();
     }
 }
