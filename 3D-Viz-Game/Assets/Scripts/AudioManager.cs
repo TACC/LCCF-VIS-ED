@@ -1,8 +1,12 @@
 using System;
 using UnityEngine;
-//adjust enum to your station's need!!!
-//the SOUND enums should match the index of sound list for each station
 
+/*
+To use: Call AudioManager.
+Can play a clip of sfx, start/stop playing music.
+Just drag the sound clips into designated sections.
+The background musics are separate audio sources you need to add and drag in.
+*/
 public enum STATION
 {
     CASHIER,
@@ -11,7 +15,7 @@ public enum STATION
     STOCKER
 };
 
-public enum SOUND
+public enum SOUND //adjust enum to your station's need!!!
 {
     //Cashier
 
