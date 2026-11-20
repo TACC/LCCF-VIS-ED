@@ -9,16 +9,16 @@ using System;
 public class DropHandler : MonoBehaviour, IDropHandler
 {
     [SerializeField] private Canvas canvas;
-     private RectTransform rectTransform;
+    private RectTransform rectTransform;
 
-     [Header("Order Ticket pairing")]
-     [SerializeField] private OrderTicketUI orderTicketUI;
+    [Header("Order Ticket pairing")]
+    [SerializeField] private OrderTicketUI orderTicketUI;
 
-     [SerializeField] private slotIncrement slotInc;
+    [SerializeField] private slotIncrement slotInc;
 
-     //[SerializeField] private Transform[] slots;
+    //[SerializeField] private Transform[] slots;
 
-     private int nextSlotIndex = 0;
+    private int nextSlotIndex = 0;
     private void Awake()
     {
         // Optional: Initialize any necessary components or variables
@@ -33,8 +33,8 @@ public class DropHandler : MonoBehaviour, IDropHandler
 
     public void OnDrop(PointerEventData eventData)
     {
-       
-       // NEW CODE (HELP FROM CLAUDE)
+
+        // NEW CODE (HELP FROM CLAUDE)
 
         if (eventData.pointerDrag == null) return;
 
@@ -47,5 +47,5 @@ public class DropHandler : MonoBehaviour, IDropHandler
 
     }
 
-    
+
 }
